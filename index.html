@@ -2,464 +2,380 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Umwelttechnik – Fragenkatalog zum Lernen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#12489f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Umwelttechnik – Karteikarten</title>
 <style>
   :root{
-    --paper:#f6f4ee;
-    --card:#fffdf8;
-    --ink:#1c1a17;
-    --ink-soft:#5c574f;
-    --line:#e4ded1;
-    --blue:#12489f;         /* Antworten */
-    --blue-soft:#eaf1fb;
-    --blue-line:#c3d6f2;
-    --green:#2f6b46;        /* Fachthema */
-    --green-soft:#e6efe8;
-    --amber:#8a5a12;
-    --amber-soft:#f6eddb;
-    --done:#2f6b46;
-    --shadow:0 1px 0 rgba(0,0,0,.03), 0 8px 24px -18px rgba(0,0,0,.35);
-    --radius:14px;
+    --paper:#f6f4ee; --card:#fffdf8; --ink:#1c1a17; --ink-soft:#5c574f;
+    --line:#e4ded1; --blue:#12489f; --blue-soft:#eaf1fb; --blue-line:#c3d6f2;
+    --green:#2f6b46; --green-soft:#e6efe8; --amber:#8a5a12; --amber-soft:#f6eddb;
+    --red:#a23b2e;
+    --shadow:0 10px 30px -18px rgba(0,0,0,.45), 0 2px 8px -4px rgba(0,0,0,.12);
+    --safe-b:env(safe-area-inset-bottom,0px);
+    --safe-t:env(safe-area-inset-top,0px);
   }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
   body{
-    margin:0; background:var(--paper); color:var(--ink);
+    margin:0; background:var(--paper); color:var(--ink); overflow:hidden;
     font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-    line-height:1.5; -webkit-font-smoothing:antialiased;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; height:100dvh;
   }
-  .wrap{max-width:1120px; margin:0 auto; padding:0 20px}
+  .bar{flex:0 0 auto; padding:calc(10px + var(--safe-t)) 16px 10px; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#fbfaf4,#f6f4ee)}
+  .bar-row{display:flex; align-items:center; gap:10px}
+  .brand{font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--green); font-weight:700}
+  .brand b{color:var(--ink)}
+  .deckbtn{margin-left:auto; border:1px solid var(--line); background:var(--card); color:var(--ink);
+    font-size:12.5px; padding:8px 12px; border-radius:999px; cursor:pointer; display:flex; gap:7px; align-items:center; max-width:58vw}
+  .deckbtn .dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:0 0 auto}
+  .deckbtn .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .progline{margin-top:9px; height:6px; border-radius:999px; background:var(--green-soft); overflow:hidden}
+  .progline i{display:block; height:100%; width:0; background:var(--green); border-radius:999px; transition:width .3s}
+  .progmeta{display:flex; justify-content:space-between; margin-top:6px; font-size:11.5px; color:var(--ink-soft)}
+  .progmeta b{color:var(--ink)}
 
-  /* Header */
-  header.top{
-    border-bottom:1px solid var(--line);
-    background:
-      linear-gradient(180deg,#fbfaf4, #f6f4ee);
-    position:relative; overflow:hidden;
-  }
-  header.top::before{
-    content:""; position:absolute; inset:0;
-    background:
-      repeating-linear-gradient(90deg, transparent 0 39px, rgba(18,72,159,.05) 39px 40px);
-    pointer-events:none;
-  }
-  .masthead{padding:34px 0 26px; position:relative}
-  .eyebrow{
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    letter-spacing:.28em; text-transform:uppercase; font-size:11px;
-    color:var(--green); font-weight:600;
-  }
-  h1{
-    font-size:clamp(28px,4.4vw,46px); line-height:1.03; margin:.28em 0 .1em;
-    letter-spacing:-.01em; font-weight:800;
-  }
-  h1 .accent{color:var(--blue)}
-  .sub{color:var(--ink-soft); font-size:15px; max-width:60ch}
-  .legend{
-    margin-top:14px; display:flex; gap:16px; flex-wrap:wrap;
-    font-family:ui-monospace,monospace; font-size:12px; color:var(--ink-soft);
-  }
-  .legend span{display:inline-flex; align-items:center; gap:7px}
-  .swatch{width:13px; height:13px; border-radius:3px; display:inline-block}
-  .sw-q{background:var(--ink)}
-  .sw-a{background:var(--blue)}
-  .sw-note{background:var(--amber)}
+  .stage{flex:1 1 auto; position:relative; padding:16px; display:flex; align-items:stretch; perspective:1400px; min-height:0}
+  .flip{position:relative; width:100%; transform-style:preserve-3d;
+    transition:transform .45s cubic-bezier(.2,.7,.2,1); cursor:pointer}
+  .flip.flipped{transform:rotateY(180deg)}
+  .face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    background:var(--card); border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow);
+    display:flex; flex-direction:column; overflow:hidden}
+  .face.back{transform:rotateY(180deg); border-color:var(--blue-line)}
+  .face-top{flex:0 0 auto; padding:16px 18px 0; display:flex; align-items:center; gap:8px}
+  .tag{font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; font-weight:700;
+    padding:5px 10px; border-radius:999px; background:var(--green-soft); color:var(--green)}
+  .tag.a{background:var(--blue-soft); color:var(--blue)}
+  .tag.note{background:var(--amber-soft); color:var(--amber)}
+  .lvl{margin-left:auto; display:flex; align-items:center; gap:4px; font-size:10.5px; color:var(--ink-soft)}
+  .lvl .pip{width:8px; height:8px; border-radius:50%; background:var(--green-soft); border:1px solid #cfe0d5}
+  .lvl .pip.on{background:var(--green); border-color:var(--green)}
+  .lvl.new .pip{background:var(--amber-soft); border-color:#e3cf9f}
+  .face-body{flex:1 1 auto; padding:14px 20px 18px; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    display:flex; flex-direction:column; justify-content:center}
+  .face.back .face-body{justify-content:flex-start}
+  .q{font-size:clamp(20px,5.6vw,27px); line-height:1.32; font-weight:600}
+  .hint{margin-top:18px; font-size:12.5px; color:var(--ink-soft); text-align:center}
+  .a-line{color:var(--blue); font-size:clamp(15px,4.1vw,17px); line-height:1.5; margin:0 0 6px}
+  .a-line.head{font-weight:700; margin-top:10px}
+  .a-line.head:first-child{margin-top:0}
+  .face.note .a-line{color:var(--amber)}
+  .a-scrollhint{position:sticky; bottom:-2px; height:22px; margin-top:-22px; background:linear-gradient(180deg,transparent,var(--card)); pointer-events:none}
 
-  /* Progress hero */
-  .progresshero{
-    display:flex; align-items:center; gap:22px; flex-wrap:wrap;
-    margin-top:22px; padding:16px 18px; border:1px solid var(--line);
-    border-radius:var(--radius); background:var(--card); box-shadow:var(--shadow);
-  }
-  .ring{--p:0; width:74px; height:74px; border-radius:50%; flex:0 0 auto;
-    background:conic-gradient(var(--green) calc(var(--p)*1%), var(--green-soft) 0);
-    display:grid; place-items:center; position:relative;}
-  .ring::after{content:""; position:absolute; inset:8px; border-radius:50%; background:var(--card)}
-  .ring b{position:relative; z-index:1; font-size:17px; font-family:ui-monospace,monospace}
-  .phero-text{flex:1 1 220px}
-  .phero-text .big{font-size:16px; font-weight:700}
-  .phero-text .small{color:var(--ink-soft); font-size:13.5px}
-  .phero-actions{display:flex; gap:10px; flex-wrap:wrap}
+  .badge{position:absolute; top:22px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    padding:7px 12px; border-radius:10px; opacity:0; transition:opacity .1s; border:2px solid; z-index:3}
+  .badge.know{right:22px; color:var(--green); border-color:var(--green); transform:rotate(8deg)}
+  .badge.again{left:22px; color:var(--red); border-color:var(--red); transform:rotate(-8deg)}
 
-  /* Controls (sticky) */
-  .controls{
-    position:sticky; top:0; z-index:30; background:rgba(246,244,238,.92);
-    backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
-    padding:12px 0;
-  }
-  .controls .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-  .search{
-    flex:1 1 260px; display:flex; align-items:center; gap:8px;
-    background:var(--card); border:1px solid var(--line); border-radius:10px;
-    padding:9px 12px;
-  }
-  .search input{
-    border:0; outline:0; background:transparent; width:100%; font-size:15px;
-    font-family:inherit; color:var(--ink);
-  }
-  .search svg{flex:0 0 auto; opacity:.5}
-  button.btn{
-    font-family:ui-monospace,monospace; font-size:12.5px; letter-spacing:.02em;
-    border:1px solid var(--line); background:var(--card); color:var(--ink);
-    padding:9px 13px; border-radius:10px; cursor:pointer; transition:.15s;
-    white-space:nowrap;
-  }
-  button.btn:hover{border-color:#cabfa8; transform:translateY(-1px)}
-  button.btn.active{background:var(--blue); color:#fff; border-color:var(--blue)}
-  button.btn.green.active{background:var(--green); border-color:var(--green)}
-  button.btn:focus-visible, .search:focus-within, a:focus-visible, .qcard:focus-visible{
-    outline:2px solid var(--blue); outline-offset:2px;
-  }
+  .controls{flex:0 0 auto; padding:10px 16px calc(12px + var(--safe-b)); display:flex; gap:10px; align-items:stretch;
+    border-top:1px solid var(--line); background:var(--card)}
+  .cbtn{flex:1; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:14px;
+    padding:13px 8px; font-size:14px; font-weight:600; cursor:pointer; display:flex; flex-direction:column;
+    align-items:center; gap:3px; transition:.12s; font-family:inherit}
+  .cbtn:active{transform:scale(.96)}
+  .cbtn small{font-size:10.5px; font-weight:400; opacity:.7}
+  .cbtn.again{border-color:#e6c3bd; color:var(--red); background:#faf0ee}
+  .cbtn.flip{flex:1.3; border-color:var(--blue-line); color:var(--blue); background:var(--blue-soft); font-weight:700}
+  .cbtn.know{border-color:#bcd8c6; color:var(--green); background:var(--green-soft)}
+  .cbtn svg{width:20px;height:20px}
+  .controls.answer-hidden .cbtn.again,.controls.answer-hidden .cbtn.know{opacity:.38; pointer-events:none}
 
-  /* Topic chips */
-  .chips{display:flex; gap:8px; overflow-x:auto; padding:12px 0 2px; margin-top:2px}
-  .chip{
-    flex:0 0 auto; font-family:ui-monospace,monospace; font-size:12px;
-    border:1px solid var(--line); background:var(--card); color:var(--ink-soft);
-    padding:7px 12px; border-radius:999px; cursor:pointer; transition:.15s;
-  }
-  .chip:hover{color:var(--ink); border-color:#cabfa8}
-  .chip.active{background:var(--green); color:#fff; border-color:var(--green)}
-  .chip small{opacity:.7}
+  .done-screen{position:absolute; inset:16px; border-radius:22px; background:var(--card); border:1px solid var(--line);
+    box-shadow:var(--shadow); display:none; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:30px; z-index:5}
+  .done-screen.show{display:flex}
+  .done-screen .big{font-size:52px}
+  .done-screen h2{margin:8px 0 4px; font-size:24px}
+  .done-screen p{color:var(--ink-soft); margin:0 0 18px; font-size:15px}
+  .done-screen .stat{display:flex; gap:26px; margin-bottom:22px}
+  .done-screen .stat div b{display:block; font-size:26px}
+  .done-screen .stat .g{color:var(--green)} .done-screen .stat .r{color:var(--red)}
+  .primary{border:1px solid var(--green); background:var(--green); color:#fff; font-family:inherit;
+    padding:13px 22px; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; margin:4px}
+  .ghost{border:1px solid var(--line); background:var(--card); color:var(--ink); font-family:inherit;
+    padding:13px 22px; border-radius:12px; font-size:15px; cursor:pointer; margin:4px}
 
-  /* Topic section */
-  main{padding:26px 0 80px}
-  .topic{margin:0 0 30px; scroll-margin-top:150px}
-  .topic-head{
-    display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
-    padding-bottom:8px; border-bottom:2px solid var(--green);
-    margin-bottom:14px;
-  }
-  .topic-num{
-    font-family:ui-monospace,monospace; font-size:13px; color:var(--green);
-    font-weight:700;
-  }
-  .topic-head h2{font-size:clamp(19px,2.4vw,25px); margin:0; letter-spacing:-.01em; flex:1 1 auto}
-  .topic-prog{
-    font-family:ui-monospace,monospace; font-size:12px; color:var(--ink-soft);
-    background:var(--green-soft); padding:3px 9px; border-radius:999px;
-  }
+  .sheet-backdrop{position:fixed; inset:0; background:rgba(28,26,23,.45); z-index:50; opacity:0; pointer-events:none; transition:opacity .2s}
+  .sheet-backdrop.show{opacity:1; pointer-events:auto}
+  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:51; background:var(--paper); border-radius:20px 20px 0 0;
+    max-height:84dvh; transform:translateY(100%); transition:transform .28s cubic-bezier(.2,.7,.2,1);
+    display:flex; flex-direction:column; padding-bottom:var(--safe-b)}
+  .sheet.show{transform:translateY(0)}
+  .sheet-head{padding:14px 18px 8px; position:relative}
+  .grab{width:38px; height:4px; border-radius:99px; background:var(--line); margin:0 auto 12px}
+  .sheet-head h3{margin:0; font-size:17px}
+  .sheet-head p{margin:3px 0 0; font-size:12.5px; color:var(--ink-soft)}
+  .sheet-list{overflow-y:auto; padding:6px 12px 10px; -webkit-overflow-scrolling:touch}
+  .deck-item{display:flex; align-items:center; gap:12px; padding:13px 14px; border:1px solid var(--line);
+    background:var(--card); border-radius:12px; margin:0 0 8px; cursor:pointer; transition:.12s}
+  .deck-item:active{transform:scale(.99)}
+  .deck-item.active{border-color:var(--green); background:var(--green-soft)}
+  .deck-item .num{font-size:12px; color:var(--green); font-weight:700; width:22px; flex:0 0 auto}
+  .deck-item .di-main{flex:1 1 auto; min-width:0}
+  .deck-item .di-main .t{font-size:15px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .deck-item .di-main .m{font-size:11.5px; color:var(--ink-soft); margin-top:2px}
+  .deck-item .mini{width:52px; height:5px; border-radius:99px; background:var(--green-soft); overflow:hidden; flex:0 0 auto}
+  .deck-item .mini i{display:block; height:100%; background:var(--green)}
+  .sheet-opts{display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--line); flex-wrap:wrap}
+  .opt{flex:1; min-width:120px; border:1px solid var(--line); background:var(--card); border-radius:10px; padding:11px;
+    font-size:13px; cursor:pointer; font-family:inherit; display:flex; gap:7px; align-items:center; justify-content:center}
+  .opt.warn{color:var(--red); border-color:#e6c3bd}
 
-  /* Question card */
-  .qcard{
-    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-    box-shadow:var(--shadow); margin:0 0 12px; overflow:hidden; transition:.15s;
+  @media (min-width:680px){
+    .stage,.bar,.controls{max-width:600px; margin-left:auto; margin-right:auto; width:100%}
+    .sheet{max-width:600px; margin:0 auto; border-radius:20px 20px 0 0}
   }
-  .qcard.done{border-color:var(--green); background:#fbfdfa}
-  .qhead{
-    display:flex; gap:12px; align-items:flex-start; padding:15px 16px; cursor:pointer;
-  }
-  .qmark{
-    flex:0 0 auto; width:26px; height:26px; border-radius:7px; margin-top:1px;
-    border:1px solid var(--line); background:var(--paper); cursor:pointer;
-    display:grid; place-items:center; transition:.15s; color:transparent;
-  }
-  .qmark:hover{border-color:var(--green)}
-  .qcard.done .qmark{background:var(--green); border-color:var(--green); color:#fff}
-  .qmark svg{width:15px; height:15px}
-  .qtext{flex:1 1 auto; font-size:16.5px; font-weight:600; line-height:1.4}
-  .qtoggle{
-    flex:0 0 auto; align-self:center; font-family:ui-monospace,monospace;
-    font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue);
-    border:1px solid var(--blue-line); background:var(--blue-soft); border-radius:8px;
-    padding:6px 9px; transition:.15s; user-select:none;
-  }
-  .qcard.open .qtoggle{background:var(--blue); color:#fff; border-color:var(--blue)}
-
-  .answer{
-    display:grid; grid-template-rows:0fr; transition:grid-template-rows .28s ease;
-  }
-  .qcard.open .answer{grid-template-rows:1fr}
-  .answer > div{overflow:hidden}
-  .answer-inner{
-    border-top:1px dashed var(--blue-line); margin:0 16px; padding:14px 0 16px;
-    color:var(--blue);
-  }
-  .answer-inner .aline{
-    position:relative; padding-left:2px; margin:0 0 5px; font-size:15.5px;
-    color:var(--blue); line-height:1.5;
-  }
-  .answer-inner .aline.head{font-weight:700; margin-top:9px}
-  .answer-inner .aline.head:first-child{margin-top:0}
-  .qcard.note .answer-inner{color:var(--amber)}
-  .qcard.note .qtoggle{color:var(--amber); background:var(--amber-soft); border-color:#e3cf9f}
-  .qcard.note.open .qtoggle{background:var(--amber); color:#fff}
-  .qcard.note .answer-inner{border-top-color:#e3cf9f}
-
-  mark{background:#fff2a8; color:inherit; padding:0 1px; border-radius:2px}
-
-  .empty{
-    text-align:center; padding:60px 20px; color:var(--ink-soft);
-    font-family:ui-monospace,monospace;
-  }
-
-  footer{border-top:1px solid var(--line); padding:26px 0 40px; color:var(--ink-soft); font-size:13px}
-  footer a{color:var(--blue)}
-
-  .toTop{
-    position:fixed; right:18px; bottom:18px; z-index:40;
-    width:44px; height:44px; border-radius:50%; border:1px solid var(--line);
-    background:var(--card); box-shadow:var(--shadow); cursor:pointer;
-    display:none; place-items:center; color:var(--ink);
-  }
-  .toTop.show{display:grid}
-
-  @media (max-width:560px){
-    .qtoggle{display:none}
-    .phero-actions{width:100%}
-  }
-  @media print{
-    .controls,.progresshero,.toTop,.qtoggle,.qmark,header.top::before{display:none!important}
-    .answer{grid-template-rows:1fr!important}
-    .qcard{break-inside:avoid; box-shadow:none}
-    body{background:#fff}
-  }
-  @media (prefers-reduced-motion:reduce){*{transition:none!important; scroll-behavior:auto}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="wrap masthead">
-    <div class="eyebrow">Vorlesung Umwelttechnik · BIS-Maschinenbau · WS 2014/15</div>
-    <h1>Fragenkatalog <span class="accent">zum Lernen</span></h1>
-    <p class="sub">Alle Prüfungsfragen 1:1 aus dem Katalog – tippe auf eine Frage, um die <strong style="color:var(--blue)">Antwort in Blau</strong> aufzudecken. Hake ab, was sitzt; dein Fortschritt bleibt im Browser gespeichert.</p>
-    <div class="legend">
-      <span><i class="swatch sw-q"></i>Frage</span>
-      <span><i class="swatch sw-a"></i>Antwort</span>
-      <span><i class="swatch sw-note"></i>Skizze / nicht im Katalog</span>
+  <div class="bar">
+    <div class="bar-row">
+      <div class="brand">Umwelttechnik · <b>Karteikarten</b></div>
+      <button class="deckbtn" id="deckBtn"><span class="dot"></span><span class="lbl" id="deckLbl">Alle Themen</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
     </div>
-    <div class="progresshero">
-      <div class="ring" id="ring"><b id="ringPct">0%</b></div>
-      <div class="phero-text">
-        <div class="big"><span id="doneCount">0</span> von <span id="totalCount">0</span> Fragen gelernt</div>
-        <div class="small" id="pheroSub">Klick auf das Kästchen links einer Frage, wenn du sie kannst.</div>
+    <div class="progline"><i id="progFill"></i></div>
+    <div class="progmeta"><span id="progLeft">–</span><span id="progRight">–</span></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="flip" id="flip">
+      <span class="badge again" id="badgeAgain">Nochmal</span>
+      <span class="badge know" id="badgeKnow">Gewusst</span>
+      <div class="face front">
+        <div class="face-top"><span class="tag" id="frontTag">Thema</span><span class="lvl" id="frontLvl"></span></div>
+        <div class="face-body"><div class="q" id="frontQ"></div><div class="hint">Tippen zum Umdrehen</div></div>
       </div>
-      <div class="phero-actions">
-        <button class="btn" id="btnExam">Prüfungsmodus</button>
-        <button class="btn" id="btnReset">Fortschritt zurücksetzen</button>
+      <div class="face back" id="backFace">
+        <div class="face-top"><span class="tag a" id="backTag">Antwort</span><span class="lvl" id="backLvl"></span></div>
+        <div class="face-body" id="backBody"></div>
+        <div class="a-scrollhint"></div>
       </div>
+    </div>
+
+    <div class="done-screen" id="doneScreen">
+      <div class="big" id="doneEmoji">🎉</div>
+      <h2 id="doneTitle">Runde geschafft!</h2>
+      <p id="doneSub"></p>
+      <div class="stat">
+        <div><b class="g" id="doneKnow">0</b><small>gewusst</small></div>
+        <div><b class="r" id="doneAgain">0</b><small>nochmal</small></div>
+      </div>
+      <div>
+        <button class="primary" id="weakBtn">Schwache Karten üben</button>
+        <button class="ghost" id="restartBtn">Ganzen Stapel neu</button>
+      </div>
+      <button class="ghost" id="chooseBtn" style="margin-top:6px">Anderes Thema wählen</button>
     </div>
   </div>
-</header>
 
-<div class="controls">
-  <div class="wrap">
-    <div class="row">
-      <label class="search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="search" type="search" placeholder="Fragen & Antworten durchsuchen … (z.B. Faulturm, SNCR, Deponie)">
-      </label>
-      <button class="btn green" id="btnOpenAll">Alle Antworten</button>
-      <button class="btn" id="btnCloseAll">Alle zu</button>
-      <button class="btn" id="btnHideDone">Gelernte ausblenden</button>
-    </div>
-    <div class="chips" id="chips"></div>
+  <div class="controls answer-hidden" id="controls">
+    <button class="cbtn again" id="btnAgain">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      Nochmal<small>← wischen</small>
+    </button>
+    <button class="cbtn flip" id="btnFlip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
+      Umdrehen<small>tippen</small>
+    </button>
+    <button class="cbtn know" id="btnKnow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      Gewusst<small>wischen →</small>
+    </button>
   </div>
-</div>
 
-<main class="wrap" id="main"></main>
-
-<footer class="wrap">
-  <p>Inhalt: Fragenkatalog zur Vorlesung „Umwelttechnik“, WS 2014/15 – Fragen und Antworten unverändert übernommen. Antworten, die im Katalog nur als Skizze/Graph verlangt werden, sind mit einem Hinweis auf die jeweilige Foliendatei markiert.</p>
-  <p style="margin-top:6px">Lernstand wird lokal in deinem Browser gespeichert (localStorage) und verlässt dein Gerät nicht.</p>
-</footer>
-
-<button class="toTop" id="toTop" aria-label="Nach oben">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 15 6-6 6 6"/></svg>
-</button>
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="sheet" id="sheet">
+    <div class="sheet-head"><div class="grab"></div>
+      <h3>Thema wählen</h3>
+      <p>Was du oft falsch hast, kommt automatisch öfter. Dein Level pro Karte bleibt gespeichert.</p>
+    </div>
+    <div class="sheet-list" id="sheetList"></div>
+    <div class="sheet-opts">
+      <button class="opt" id="optWeak"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6l3 3"/><circle cx="12" cy="12" r="9"/></svg><span id="weakLbl">Nur schwache Karten</span></button>
+      <button class="opt warn" id="optReset"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Level zurücksetzen</button>
+    </div>
+  </div>
 
 <script>
 const DATA = [{"topic": "Kläranlage – Aufbau und Funktion", "questions": [{"q": "1. Skizzieren Sie den Aufbau einer Kläranlage (tatsächlich als Zeichnung!).", "a": ["→ Zeichnung erforderlich (siehe Folien / Kläranlage.pdf): Rechenanlage → Sandfang → Vorklärbecken → Belebungsbecken → Nachklärbecken; Schlammweg: Voreindicker → Faulturm → Nacheindicker → Schlammpresse."], "note": true}, {"q": "2. Beschreiben Sie in Stichworten den Weg grober Verunreinigungen durch eine Kläranlage (Frage über mehrere Folien).", "a": ["a) Rechenanlage, erste Reinigungsstufe gegen grobe Verunreinigungen (Verstopfungsgefahr bei den Pumpen)", "Rechengut:", "– Maschinelle Waschung (Abtrennung Fäkalstoffe)", "– Rechengutpresse (Entwässerung, Gewichtsreduzierung)", "– Verbrennung,", "– Kompostierung", "– oder Ablagerung", "b) Sandfang, Entfernung grober Verunreinigungen, die sich absetzen können (Minimierung von Verstopfungen und Verschleiß)", "Sandfang-Gut:", "– Auswaschung organischer Begleitstoffe, dadurch bessere Entwässerung und Verwertbarkeit z.B. im Straßenbau"]}, {"q": "3. Wozu dient ein Vorklärbecken?", "a": ["– Absetzen oder Aufschwimmen ungelöster Stoffe (Fäkalien, Papier)", "– Entfernung etwa eines Drittels der organischen Stoffe", "– Primärschlamm geht zum Voreindicker"]}, {"q": "4. Beschreiben Sie den Weg des Schlamms: wo fällt er an, wo geht er hin?", "a": ["– Primärschlamm aus dem Vorklärbecken und Überschussschlamm aus dem Nachklärbecken gehen zusammen in den Voreindicker, dann in den Faulraum (Faulturm), danach in den Nacheindicker, dann in die Schlammpresse zur Gewichtsreduzierung und schlussendlich in die Entsorgung (Nutzung als Dünger oder Verbrennung)"]}, {"q": "5. Welche Verfahrensalternativen gibt es für die biologische Reinigungsstufe? Was ist bei allen essentiell?", "a": ["– Belebtschlammverfahren (häufigstes Verfahren in den kommunalen Kläranlagen Mitteleuropas),", "– Tropfkörperverfahren,", "– Tauchkörperverfahren,", "– Festbettreaktorverfahren", "– essentiell: gute Durchmischung und Belüftung"]}, {"q": "6. Wozu dient der Faulturm? Was geschieht dort und was entsteht?", "a": ["– Im Faulturm wird die im Schlamm verbliebene Organik, unter anaeroben Bedingungen, abgebaut. Dabei entsteht Faulgas, das nach Aufreinigung in Blockheizkraftwerken verwertet werden kann, und Faulschlamm, der nach weiterer Behandlung im Nacheindicker als Dünger verwendet oder verbrannt werden kann."]}]}, {"topic": "Abwasser – Inhaltsstoffe und Reinigung", "questions": [{"q": "1. Welche beiden Stoffströme verbleiben nach der Abwasserreinigung und was geschieht mit ihnen hauptsächlich?", "a": ["– Gereinigtes Abwasser wird in Oberflächengewässer eingeleitet, wenn durchschnittliche Sauerstoff-Bedarfsstufe 1,4 (entspricht sehr geringer Restverschmutzung) und Nährstoff-Belastungsstufe 1,7 erreicht sind", "– Klärschlamm, Verbleib: Stoffliche Verwertung, Thermische Entsorgung, Deponie, Zwischenlagerung, Abgabe an eine andere Abwasserbehandlungsanlage"]}, {"q": "2. Benennen Sie die vier Arten von Abwasser-Inhaltsstoffen sowie jeweils eine Beispielsubstanz und ihr Schadstoffpotential.", "a": ["– Zehrstoffe: Glucose, Harnsäure; biologisch abbaubar; Abbau verbraucht Sauerstoff, dadurch Reduktion des Sauerstoffgehaltes; kann in Gewässern zu Fischsterben führen; führen bei anaeroben Abbauprozessen zu Geruchsbelastungen", "– Nährstoffe: Bsp. Stickstoff- und Phosphor-Verbindungen; verstärktes Wachstum von Pflanzen (Eutrophierung); führt besonders in stehenden Gewässern zu Problemen, aber auch noch im Meer in Form von verstärktem Algenwachstum zu spüren", "– Schadstoffe: Bsp. Gifte, Schwermetalle, synthetische organische Substanzen (auch Medikamente); weitere Beispiele: Bakterien, Pilze, Viren; Schwächung der natürlichen Flora und Fauna", "– Störstoffe: Bsp. Salze, Fette, Öle, Tone, Sand; können auf die Mikroorganismen toxisch wirken oder aber den Verfahrensablauf der Aufreinigung stören"]}, {"q": "3. Welche grundsätzlichen Reinigungsverfahren stehen der Abwasserreinigung zur Verfügung (die Antwort findet sich auf mehreren Folien verteilt)?", "a": ["– Mechanische/physikalische Reinigungsverfahren", "– Biologische Reinigungsverfahren", "– Chemische Reinigungsverfahren"]}, {"q": "4. Nennen Sie drei mechanisch/physikalische (oder biologische oder chemische) Reinigungsprozesse mit ihrem Zweck und der zugehörigen Anlagenkomponente.", "a": ["Mechanische/physikalische Reinigungsverfahren:", "a) Abscheidung, Entfernung von Fetten und Ölen, Schwimmstoff- bzw. Ölabscheider", "b) Adsorption, Anlagerung z.B. von halogenierten Kohlenwasserstoffverbindungen (AOX) oder Farbstoffen, Aktivkohlefilter", "c) Filtration, Entfernung von Schwebstoffen, Sandfilter", "Chemische Reinigungsverfahren:", "a) Desinfektion, Abtötung von Krankheitserregern durch Chlor- oder Ozonzugabe oder durch UV-Bestrahlung, Sonderbecken", "b) Fällung, Ausfällung von Phosphat-Ionen mit Eisen- und Aluminiumsalzen, Fällungsbecken", "c) pH-Wert-Einstellung, Einstellung des gewünschten pH-Wertes durch die Zugabe von Säuren oder Basen, Neutralisationsbecken"]}]}, {"topic": "Altlastensanierung", "questions": [{"q": "1. Was ist der Unterschied zwischen einer altlastverdächtigen Fläche, einer Altablagerung und einem Altstandort?", "a": ["– „Altlastenverdächtige Flächen“: Altablagerungen und Altstandorte, bei denen der Verdacht schädlicher Bodenveränderungen oder sonstiger Gefahren für den einzelnen oder die Allgemeinheit besteht", "– „Altablagerung“: stillgelegte Abfallbeseitigungsanlagen sowie sonstige Grundstücke, auf denen Abfälle behandelt, gelagert oder abgelagert worden sind", "– „Altstandorte“: Grundstücke stillgelegter Anlagen und sonstige Grundstücke, auf denen mit umweltgefährdenden Stoffen umgegangen worden ist."]}, {"q": "2. Welche Kontaminanten sind am häufigsten auf Altlast-Flächen zu finden? Nennen Sie drei Beispiele.", "a": ["– MKW, Aliphatische Kohlenwasserstoffe (Methan, Ethan, Propan, …)", "– BTXE, aromatische Kohlenwasserstoffe (Benzol, Toluol, Ethylbenzol, …)", "– Schwermetallsalze (Quecksilbersalze, Bleisalze, Cadmiumsalze, …)", "– LCKW, FCKW, sonst. organische Chlorverbindungen"]}, {"q": "3. Welche Maßnahmen können bei einer Sanierung ergriffen werden?", "a": ["– Verwaltungsmaßnahmen: Bsp. Umwidmung einer Fläche auf eine weniger sensible Nutzung", "– Sicherungsmaßnahmen: Bsp. Einbau von bautechnischen Sperren gegen eine Ausbreitung der Schadstoffe", "– Umlagerung: Bsp. schadstoffhaltiges Material wird ausgebaut und an anderer Stelle (Deponie?!) wieder eingebaut", "– Dekontamination: Bsp. Schadstoffe werden auf technische Art und Weise entfernt", "– Sanierung über Selbstreinigung mit Überwachung: Bsp. mikrobieller Abbau der Schadstoffe bis unter einen Grenzwert"]}, {"q": "4. Bei Bauarbeiten fallen übelriechende Bodenschichten auf – was geschieht im korrekten Fall? (Denken Sie an das Tafelbild.)", "a": ["→ Keine ausformulierte Antwort im Katalog (Tafelbild). Siehe Altlastensanierung.pdf."], "note": true}, {"q": "5. Nennen Sie x Verfahren zur Bodenreinigung.", "a": ["– Elektrokinetische Sanierung", "– Thermische Verfahren", "– Chemisch-physikalische Verfahren", "– Bodenwaschverfahren", "– Bodenluftabsaugung", "– Immobilisierungsverfahren", "– Mikrobiologische Verfahren", "– in situ / ex situ: In situ: Schadstoffe werden im Boden direkt entfernt (physikalisch, chemisch, biologisch oder energetisch); Ex situ: Schadstoffe werden außerhalb des Schadstoffherdes entfernt.", "– On site / Off site: On-site-Verfahren: Entfernung auf dem gleichen oder einem sehr nahe liegenden Grundstück; Off-site-Verfahren: Entfernung an anderer Stelle, dazu Materialtransport erforderlich"]}, {"q": "6. Schildern Sie eines der Bodenreinigungsverfahren genauer.", "a": ["Ablauf: Thermisches Verfahren", "• Ausheben des kontaminierten Bodens", "• Abtransport zu einem Drehrohrofen (oder Wirbelschichtofen)", "• Brechen und Sieben des Materials", "• Eingabe in den kühleren Teil des Drehrohrofens, dort Trocknung", "• Wanderung durch den Ofen, dabei Verdampfung der Schadstoffe bei 400–600 °C (teilweise auch Verbrennung)", "• Abkühlung und Befeuchtung des Bodens in einem Mischer", "• Abtransport und ggf. Wiedereinbau des Bodens", "• Nachverbrennung der verdampften Schadstoffe bei 850–1200 °C", "• Neutralisation der nachverbrannten Abgase, Filterung, Reinigung"]}]}, {"topic": "Abfallvermeidung", "questions": [{"q": "1. Wie ist die Abfallhierarchie aufgebaut?", "a": ["1. Vermeidung", "2. Vorbereitung zur Wiederverwendung (Anm.: Prüfung, Reinigung, Reparatur)", "3. Recycling", "4. Sonstige Verwertung, insbesondere energetische Verwertung und Verfüllung", "5. Beseitigung", "– Diejenige Maßnahme hat Vorrang, die den Schutz von Mensch und Umwelt bei der Erzeugung und Bewirtschaftung von Abfällen unter Berücksichtigung des Vorsorge- und Nachhaltigkeitsprinzips am besten gewährleistet."]}, {"q": "2. Welche beiden Arten von Abfallvermeidung gibt es? Nennen Sie jeweils zwei Beispiele.", "a": ["Qualitativ:", "• Substitution von giftigen oder anderweitig problematischen Stoffen", "• Vermeidung von Stoff-Verbünden", "• Minimierung der Anzahl der eingesetzten Stoffe auf möglichst nur einen Stoff (für einfache Produkte)", "• die Konzeption der Produkte für den Mehrfachgebrauch in Produkt-Dienstleistungssystemen (z.B. Leasing)", "Quantitativ:", "• Verringerung der eingesetzten Materialmasse", "• Konzeption von Produkten mit hoher Gebrauchsdauer für die Wiedernutzung, Weiternutzung durch Reparierbarkeit, Reinigungsfähigkeit, Waschbarkeit, Wiederbefüllbarkeit etc."]}, {"q": "3. In der Produktentwicklung wird ein Großteil an Werkstoffen, Verfahren und Kosten festgelegt: wie viel Prozent sind dies etwa?", "a": ["Bei der Produktentwicklung werden etwa", "95 % der Werkstoffe und Verfahren", "80 % der Kosten festgelegt"]}, {"q": "4. Nennen Sie x Kriterien, die es bei der Werkstoffauswahl zu berücksichtigen gilt.", "a": ["1. Schadstoffarme Werkstoffauswahl", "2. Vermeidung bestimmter Beschichtungen", "3. Werkstoffminimierung", "4. Lebensdauererhöhung", "5. Demontagefreundlichkeit", "6. Bauteile- und Gerätekennzeichnung", "7. Wiederverwendung einzelner Bauteile", "8. Reduktion der Bauteile", "9. Werkstoffkennzeichnung", "10. Recyclingfreundliche Werkstoffe und Bauteile", "11. Minderung der Werkstoff-Vielfalt", "12. Vermeidung von Verpackungen"]}, {"q": "5. Wodurch sind umweltschonende Fertigungsverfahren gekennzeichnet? Nennen Sie x Beispiele.", "a": ["• hohe direkte Ausbeute", "• hoher Wirkungsgrad", "• kontinuierlicher Betrieb", "• kurze Prozessketten", "• geringer Hilfs-/Betriebsstoffeinsatz", "• gezielte/kontrollierte Prozessführung", "• wenig Verpackung"]}, {"q": "6. Wie lassen sich Produktionsabfälle minimieren? Nennen Sie x Beispiele.", "a": ["• Schnittanordnung beim Stanzen oder Laserschneiden z.B. durch Schachteln unterschiedlicher Teile optimieren", "• Bauteil- und fertigungsgerechte Halbzeug-Abmessungen verwenden", "• Blechrückläufe für Kleinteile verwenden", "• Kunststoffe angusslos spritzgießen", "• unvermeidbare Abfälle in den Produktionskreislauf zurückführen, z.B. Angüsse regranulieren und neu einsetzen", "• Metalle aus Galvanikspülbädern zurückgewinnen", "• Lösungsmittel durch Destillation zurückgewinnen"]}]}, {"topic": "(Vorbereitung zur) Wiederverwendung und Recycling", "questions": [{"q": "1. Wozu dient die Ökodesign-Richtlinie?", "a": ["– Die Richtlinie dient zur Schaffung eines Rahmens für die Festlegung von Anforderungen an die umweltgerechte Gestaltung energieverbrauchsrelevanter Produkte"]}, {"q": "2. Im Anhang I dieser Ökodesign-Richtlinie sind Indikatoren der Wiederverwendbarkeit genannt: zählen Sie x davon auf.", "a": ["Indikatoren der Wiederverwendbarkeit und Rezyklierbarkeit:", "1. Zahl der verwendeten Materialien und Bauteile,", "2. Verwendung von Normteilen,", "3. Zeitaufwand für das Zerlegen,", "4. Komplexität der zum Zerlegen benötigten Werkzeuge,", "5. Verwendung von Kennzeichnungsnormen für wieder verwendbare und rezyklierbare Bauteile und Materialien (einschließlich der Kennzeichnung von Kunststoffteilen nach ISO-Norm),", "6. Verwendung leicht rezyklierbarer Materialien,", "7. leichte Zugänglichkeit von wertvollen und anderen rezyklierbaren Bauteilen und Materialien,", "8. leichte Zugänglichkeit von Bauteilen und Materialien, die gefährliche Stoffe enthalten"]}, {"q": "3. Wofür steht die CE-Kennzeichnung?", "a": ["– Bei Einhaltung aller Kriterien der Ökodesign-Richtlinie wird die CE-Kennzeichnung vergeben, damit darf das Produkt in der EU verkauft, in Betrieb genommen oder in die EU importiert werden"]}, {"q": "4. Nennen Sie x Vorschläge für eine demontagegerechte Konstruktion.", "a": ["1. Rücknahmesystem effizient gestalten", "2. Anzahl der Bauteile so gering wie möglich halten", "3. einfaches Zerlegen der Komponenten und Trennen der Materialien ermöglichen", "4. wirtschaftliche Demontage ist Voraussetzung für Produktrecycling (nur leicht lösbare Verbindungen einsetzen)", "5. Materialrecycling: auch zerstörende Trennverfahren möglich"]}, {"q": "5. Skizzieren Sie die Zusammenhänge zwischen Kosten und Erlösen beim Recycling in Abhängigkeit von der Demontagetiefe (in einem Graphen).", "a": ["→ Graph erforderlich (siehe Folien / Wiederverwendung_von_Recycling.pdf): Mit steigender Demontagetiefe steigen Kosten und Erlöse; wirtschaftliches Optimum dort, wo der Abstand Erlös–Kosten maximal ist."], "note": true}, {"q": "6. Geben Sie zwei Beispiele für reinigungsgerechte Konstruktionen.", "a": ["→ Keine ausformulierte Antwort im Katalog. Siehe Wiederverwendung_von_Recycling.pdf (z.B. glatte, gut zugängliche Oberflächen ohne Schmutzecken; keine schwer reinigbaren Hohlräume)."], "note": true}]}, {"topic": "Verwertung von E-Schrott, Energiesparlampen und Batterien", "questions": [{"q": "1. Welche sind die kritischen Bestandteile, deretwegen die getrennte Erfassung von E-Schrott praktiziert wird?", "a": ["– große Mengen an Quecksilber,", "– teilweise FCKW,", "– Blei- und Cadmium-haltige Bildröhren,", "– PCB-haltige Kondensatoren,", "– mit Flammschutzmitteln behandelte Teile wie Leiterplatten und Kunststoffgehäuse etc."]}, {"q": "2. Welches sind die wertgebenden Bestandteile, deretwegen die getrennte Erfassung von E-Schrott praktiziert wird?", "a": ["– Gold, Silber, Platin u.a.", "– Neodym, Yttrium, Lanthan etc.,", "– Kupfer, Aluminium, Eisen, Stahl u.a.", "– Hochwertige Kunststoffe …"]}, {"q": "3. Schildern Sie den Ablauf der E-Schrottverwertung (4 Schritte).", "a": ["1. Schadstoffentfrachtung: manuell; betrifft Nasskondensatoren (PCB-haltig), Ni-Cd-Akkus, Li-Batterien, Hg-Schalter, LCD-Anzeigen (s. Probenglas)", "2. Vordemontage: überwiegend manuell", "3. Demontage: mit elektrischen und pneumatischen Werkzeugen; Abtrennung von Geräteteilen wie Lüftern, Gehäusen, Eisenrahmen; ggf. Trennung von funktionstüchtigen oder reparablen Teilen zur Weiterverwendung / Wiederverwertung; spezielle Geräte erfordern spezialisierte Betriebe (z.B. Röntgengeräte)", "4. Schreddern und Trennen: Zerkleinerung / Aufschluss des gemischten Schrottes (grob bei Wasch- und Spülmaschinen, fein bei Chassis der Unterhaltungselektronik); Windsichtung zur Abtrennung leichter, nicht-mineralischer Bestandteile (Lack-/Holzsplitter, Pappe, Textil, Kunststoffpartikel); Abtrennung von Eisen und Stahl über Magneten; Abtrennung von NE-Metallen (Cu, Al) über Hochfrequenz-NE-Scheider; Recyclingquote für Eisen, Stahl, NE-Metalle bei ca. 95 %"]}, {"q": "4. Kühlgeräte und Bildröhren werden separat aufbereitet – warum und welche sind die problematischen Komponenten?", "a": ["– Kühlgeräte: wegen FCKW, da stark umweltgefährdend; sichere Vermeidung von FCKW-Emissionen hat oberste Priorität", "– Bildröhren: zwei Drittel Schirmglas: enthält ca. 10 % Barium/Strontium, an der Innenseite belegt mit Cadmium-haltiger Leuchtschicht; ein Drittel Konus- und Trichterglas: enthält ca. 20 % Blei; Verbindung dieser Komponenten mit Glaslot, enthält 80 % Blei"]}, {"q": "5. Wie müssen ESL korrekt entsorgt werden und warum ist das so? Wohin gehören Glüh- und Halogenlampen nach dem Gebrauch? (beides sehr knapp beantworten)", "a": ["– ESL müssen in (kommunalen oder gewerblichen) Sammelstellen abgegeben werden, da in ESL Quecksilber enthalten ist, das nicht in den Hausmüll darf.", "– Glühlampen und Halogenlampen gehören in den Restmüll (nicht ins Altglas!)"]}, {"q": "6. Nennen Sie die umweltgefährdenden Bestandteile von Batterien; warum sind sie gefährlich?", "a": ["– Cadmium: Nierenschädigungen, Knochenschäden, gilt als krebserregend", "– Quecksilber: Hg schädigt das Nervensystem, reichert sich in der Nahrungskette an, Hg-Gehalt einer einzigen Knopfzelle belastet 800.000 Liter Wasser über den Grenzwert für Trinkwasser hinaus", "– Blei: schädigt das Nervensystem, reichert sich in der Nahrungskette an"]}, {"q": "7. Wie viele Tonnen der kritischen Schwermetalle gelangen schätzungsweise ungeregelt in die Umwelt, weil die Batterien nicht ordnungsgemäß entsorgt werden? Nennen Sie x Beispiele.", "a": ["– Cd ca. 400 t", "– Hg ca. 6 t", "– Pb ca. 9500 t"]}, {"q": "8. Wie viel Wasser wird durch den Quecksilbergehalt einer einzigen Knopfzelle so belastet, dass es nicht mehr als Trinkwasser genutzt werden darf?", "a": ["– 800.000 Liter"]}]}, {"topic": "Verwertung von Altautos", "questions": [{"q": "1. Auf welchen rechtlichen Grundlagen beruht die Entsorgung von Altfahrzeugen? (knapp)", "a": ["– Richtlinie 2000/53/EG über Altfahrzeuge: Forderung, die ordentliche Verwertung von Altfahrzeugen durch geeignete Maßnahmen sicherzustellen; Quoten für Wiederverwendung, Recycling und Verwertung", "– Verordnung über die Überlassung, Rücknahme und umweltverträgliche Entsorgung von Altfahrzeugen (AltfahrzeugV), Inkrafttreten der letzten Änderung 01.03.2010, Umsetzung der europäischen Richtlinie in nationales Recht, erlassen auf Grundlage des KrW-/AbfG", "– Entscheidung 2005/293/EG zum Monitoring: Details zur Kontrolle der Einhaltung dieser Quoten (wer berichtet, wann wird berichtet, Systematik der Quotenermittlung, Datenqualität …)"]}, {"q": "2. Was geschieht mit den in Deutschland abgemeldeten Altfahrzeugen? Wo liegt das Hauptproblem bei der Verwertung von Altautos?", "a": ["– Altfahrzeuge werden entweder in Deutschland artgerecht entsorgt, aus Deutschland offiziell exportiert oder, was den Großteil der Altautos betrifft, verschwinden ohne einen Hinweis auf deren Verbleib.", "– Große Mengen an Rohstoffen gehen der Wirtschaft verloren", "– Es besteht eine Datenlücke von mehreren Mio. Fahrzeugen pro Jahr über die Verwertung in der EU", "– Umfang der Geldwäsche mit ELV-Exporten ca. 200 Mio. US$ pro Jahr"]}, {"q": "3. Ab 2015 gelten neue Quoten für die Verwertung von Altautos: wo liegen diese?", "a": ["– 85 % für Wiederverwendung und Recycling", "– 95 % für die Verwertung insgesamt", "– 10 % für die energetische Verwertung", "– < 5 % für die Beseitigung"]}, {"q": "4. Welches sind die umweltgefährdenden Bestandteile von Altfahrzeugen? Zählen Sie x davon auf.", "a": ["– Ölfilter", "– Batterie", "– Hg-haltige Schalter", "– asbesthaltige Bauteile"]}, {"q": "5. Welches sind wertgebende Bestandteile eines Altfahrzeugs?", "a": ["– Ersatzteile, Katalysatoren", "– Verkauf an Werkstätten und Privatkunden", "– Aufarbeitung bei Zulieferbetrieben der Automobilindustrie bis zur Qualität von Neuteilen"]}, {"q": "6. Wie werden Katalysatoren/Reifen/Kunststoffe verwertet?", "a": ["Katalysator:", "– Aufschneiden der Katalysator-Box; Stahlgehäuse wird recycelt, Inhalt (Mischung aus Keramik und Edelmetall) wird gesammelt", "– Probenahme (z.B. Fa. Umicore, Hanau) zur Bestimmung des genauen Edelmetall-Gehaltes", "– Rückgewinnung der Edelmetalle (z.B. Fa. Umicore, Werk Hoboken bei Antwerpen): Schmelzofen: Kupfer + Edelmetallgemisch → Legierung in Nuggetform; Herauslösen des Kupfers mittels Schwefelsäure; Trennung der einzelnen Edelmetallfraktionen durch hochkonzentrierte Säure in verschiedenen Schritten; Ausfällung durch Additive; Keramische Fraktion verbleibt in der Schlacke → Verwendung in Straßenbau und Zementindustrie", "Reifen:", "– Demontage", "– Energetische Verwertung in Zementwerken (Ersatz für Eisenerz und Kohle)", "– Entfernung von Textilkarkasse und Stahl", "– Gummi wird entweder granuliert → Untergrundbefestigung im Straßenbau, Schallschutzmaterial – oder gelöst → Verarbeitung zu elastischen Belägen z.B. an Spielplätzen und Sportanlagen", "– Auch: Nutzung von Altreifen als Schaukel, als Aufprallschutz an Go-Kart-Bahnen oder Beschwerungsmaterial in der Landwirtschaft", "Kunststoffe:", "– Fraktion (1) sortenrein: Zerkleinerung zu Granulat und Weiterverarbeitung zu neuen Produkten", "– Fraktion (2) Mischkunststoffe: Zerkleinerung und rohstoffliche Verwertung im Hochofenprozess", "– Fraktion (3) Mischkunststoffe: Zerkleinerung und energetische Verwertung in Zementindustrie, Chemische Industrie, Kraftwerke"]}, {"q": "7. Was passiert mit der Restkarosse in einem Schredderbetrieb?", "a": ["– Shreddern der Restkarosse", "– Magnetische Abtrennung der Eisenmetalle", "– Abtrennung und Sortierung der NE-Metalle", "– Aufbereitung und Sortierung der Shredder-Abfälle", "– Gewinnung einer energiereichen Restfraktion mit hohem Kunststoffanteil zum Einsatz in Kupolöfen, Hochöfen oder anderen geeigneten Anlagen"]}, {"q": "8. Kommentieren Sie die Shredderleichtfraktion: wie viel Prozent eines Altautos münden in dieser Fraktion und warum ist sie problematisch?", "a": ["– 25 % eines Altautos", "– belastet mit polychlorierten Biphenylen (PCB), polycyclischen aromatischen Kohlenwasserstoffen (PAK) und sonstigen Kohlenwasserstoffen (KW)", "– oberirdische Ablagerung ohne Vorbehandlung nicht mehr möglich (in der Mehrzahl der EU-Staaten aber bis 2015 zugelassen; dort gehen über 90 % der SLF auf Deponien)"]}]}, {"topic": "Energetische Verwertung: Biomasse und Sekundärbrennstoffe", "questions": [{"q": "1. Welche Anforderungen werden an eine energetische Verwertung gestellt (vier Fakten)?", "a": ["1. der Heizwert des einzelnen Abfalls, ohne Vermischung mit anderen Stoffen, mindestens 11.000 kJ/kg beträgt", "2. eine Anlage mit hoher Energieeffizienz vorliegt (früher: ein Feuerungswirkungsgrad von mindestens 75 % erzielt wird)", "3. entstehende Wärme selbst genutzt oder an Dritte abgegeben wird", "4. die im Rahmen der Verwertung anfallenden weiteren Abfälle möglichst ohne weitere Behandlung abgelagert werden können."]}, {"q": "2. Welchen Zweck verfolgt das Erneuerbare-Energien-Gesetz (EEG)?", "a": ["Absatz 1:", "– Ermöglichung einer nachhaltigen Entwicklung der Energieversorgung im Interesse des Klima- und Umweltschutzes", "– Verringerung der volkswirtschaftlichen Kosten der Energieversorgung auch durch die Einbeziehung langfristiger externer Effekte", "– Schonung fossiler Energieressourcen", "– Förderung der Weiterentwicklung von Technologien zur Erzeugung von Strom aus Erneuerbaren Energien"]}, {"q": "3. Welche Komponenten werden für das Erreichen dieser Ziele genutzt?", "a": ["– Wasserkraft einschließlich der Wellen-, Gezeiten-, Salzgradienten- und Strömungsenergie,", "– Windenergie,", "– Solare Strahlungsenergie,", "– Geothermie,", "– Energie aus Biomasse einschließlich Biogas, Deponiegas, Klärgas und Biomethan (Anm.: d.h. Biogas o.ä. nach Aufbereitung und Einspeisung ins Erdgasnetz),", "– Biologisch abbaubarer Anteil von Abfällen aus Haushalten und Industrie"]}, {"q": "4. Skizzieren Sie das Potential eines entsprechenden Energieträgers.", "a": ["Klärgas:", "• Steigerung möglich, da noch nicht alle Einwohner an Kläranlagen angeschlossen sind und nicht alle Anlagen das Klärgas energetisch verwerten"]}]}, {"topic": "Deponierung von Abfällen", "questions": [{"q": "1. Welche Prozesse finden in einer Deponie statt und in welcher Form gehen die entstehenden Produkte ab?", "a": ["→ Keine ausformulierte Antwort im Katalog. Siehe Deponierung_von_Abfällen.pdf (biologische Abbauprozesse; Produkte gehen als Deponiegas und Sickerwasser ab)."], "note": true}, {"q": "2. Skizzieren Sie die Emissionscharakteristik einer Siedlungsabfalldeponie in ihren verschiedenen Phasen. Zeichnen Sie dabei (beispielsweise) die Graphen für pH-Wert / Schwermetalle / CSB / die verschiedenen Gase ein.", "a": ["– Phase I: aerober Abbau, ca. 2 Wochen", "– Phase II: anaerob, saure Gärung, ca. 2 Monate", "– Phase III: anaerob, Methangärung, instabil, ca. 2 Jahre", "– Phase IV: anaerob, Methangärung, stabil, ca. 10 Jahre", "– Phase V: Endzustand, nach sehr langer Zeit", "(zusätzlich: Graphen für pH-Wert, Schwermetalle, CSB und Gase einzeichnen – siehe Folien)"]}, {"q": "3. Über welchen Zeitraum muss bei einer Siedlungsabfall-Deponie damit gerechnet werden, dass Deponiegas und Sickerwasser in mehr als umweltverträglichen Konzentrationen emittiert werden? Wie lange also muss eine Deponie überwacht werden?", "a": ["– Sickerwasser ca. 300 Jahre, Deponiegas ca. 100 Jahre"]}, {"q": "4. Welche drei Konsequenzen wurden aus den Deponieproblemen gezogen?", "a": ["– Multibarrieren-Konzept, Schutz vor den Umweltauswirkungen einer Deponie", "– Stichtag 1.6.2005: organisches Abfallmaterial durfte nicht mehr unbehandelt abgelagert werden, Notwendigkeit des Baus von Behandlungsanlagen: MVA oder MBA", "– Bis 2020 sollen alle Abfälle verwertet oder vermieden werden, sodass keine Deponien mehr benötigt werden"]}, {"q": "5. Was sagt das Multibarrieren-Konzept aus?", "a": ["– Ziel: Belästigungen und eine Gefährdung der Umwelt vermeiden oder weitestgehend vermindern", "– Methoden: technische Einrichtungen, betriebliche Maßnahmen, Vorgaben für Abfalleigenschaften", "– Bedingung: Barrieren sollen unabhängig voneinander wirksam sein"]}, {"q": "6. Skizzieren Sie eine Oberflächen- und eine Basisabdichtung gemäß DepV für eine Siedlungsabfall-Deponie der Klasse II.", "a": ["→ Zeichnung erforderlich (siehe Folien / Deponierung_von_Abfällen.pdf): Schichtaufbau der Oberflächen- und Basisabdichtung nach DepV (Deponieklasse II)."], "note": true}, {"q": "7. Nennen Sie die beiden prinzipiellen Wege des Umgangs mit Altablagerungen (nur die beiden Hauptschlagwörter). Worin liegt der Hauptunterschied?", "a": ["→ Keine ausformulierte Antwort im Katalog. Siehe Deponierung_von_Abfällen.pdf (Sicherung vs. Dekontamination – Unterschied: bei Sicherung verbleiben die Schadstoffe, bei Dekontamination werden sie entfernt)."], "note": true}]}, {"topic": "Mechanisch-biologische Abfallbehandlung (MBA)", "questions": [{"q": "1. Nennen Sie die inhaltlichen Schwerpunkte der DepV und mit welchem abfallwirtschaftlichen Verfahren sie erfüllt werden.", "a": ["– Festlegung von Schadstoffgrenzwerten für den abzulagernden Müll (wird durch mechanisch-biologische Behandlung vor der endgültigen Ablagerung erfüllt)", "– Reduzierung des Organik-Anteils im abzulagernden Müll (wird durch die getrennte Erfassung des organischen Abfallanteils und dessen anschließende Kompostierung oder Vergärung erfüllt)"]}, {"q": "2. Definieren Sie den Begriff „Mechanisch-biologische Abfallbehandlungsanlage“.", "a": ["– Anlage zur Aufbereitung oder Umwandlung von Siedlungsabfällen durch eine Kombination mechanischer und anderer physikalischer Verfahren (z.B. Zerkleinern, Sortieren) mit biologischen Verfahren (Rotte, Vergärung)"]}, {"q": "3. Welche Ziele werden mit der mechanischen Behandlung, welche mit der biologischen Behandlung des Restabfalls anvisiert?", "a": ["1. Behandlungsschritt: mechanische Behandlung:", "– Abtrennung der Stoffe, deren Verkauf einen Erlös bringt (z.B. Schrott)", "– Abtrennung der Stoffe, die nicht abgelagert werden dürfen, die aber durch eine biologische Behandlung nicht inertisiert werden (z.B. Kunststoffe)", "2. Behandlungsschritt: biologische Behandlung:", "– Abbau des nativ-organischen Anteils im verbliebenen Restmüll auf aerobem oder anaerobem Weg mit dem Ziel der Inertisierung des Mülls, damit er legal abgelagert werden kann"]}, {"q": "4. Skizzieren Sie die abfallwirtschaftliche Einbettung der Stoffströme einer MBA.", "a": ["→ Zeichnung erforderlich (siehe Folien / Mechanischbiologische_Abfallbehandlung.pdf): Stoffstromschema der MBA (Input Restabfall → mechanische Stufe → heizwertreiche Fraktion, Metalle, Deponiefraktion; biologische Stufe → Rotte/Vergärung)."], "note": true}, {"q": "5. Welche typischen physikalischen Verfahren finden sich in der mechanischen Stufe vieler MBA wieder und welche Ziele werden damit verfolgt?", "a": ["– Verfahren: mehrstufige Trenntechniken, Trocknung, Feinzerkleinerung, Pelletierung; Auslegung abhängig von Verbleib und Einsatz der heizwertreichen Abfälle und den jeweiligen Qualitätsanforderungen", "– Ziele: Erzeugung unterschiedlicher Arten an heizwertreichen Abfällen (z.B. Hoch-, Mittelkalorik, Holz); Qualitätsoptimierung durch weitergehende Abscheidung von Fe- und NE-Metallen, Stör- und Schadstoffen sowie chlorhaltigen Kunststoffen"]}, {"q": "6. Wo kann die heizwertreiche Fraktion einer MBA verwertet werden?", "a": ["– Mögliche Abnehmer sind Zementwerke (z.B. Rüdersdorf), Braunkohlekraftwerke (z.B. Jänschwalde) oder auch spezielle Ersatzbrennstoff-Heizkraftwerke [z.B. Köln-Knapsack (Industriepark), Stavenhagen (Kartoffelverarbeitung), Witzenhausen (Papierfabrik)]"]}, {"q": "7. Zeigen Sie Möglichkeiten und Grenzen der mechanisch-biologischen Behandlungsverfahren auf.", "a": ["– Massenreduktion 30–40 %", "– Verminderung der Sickerwasser- und Gasbelastungen um 90 %", "– Reduktion der klimarelevanten Methanemissionen um über 90 %", "– Restglühverlust 10–30 %", "Vorteile:", "• Flexible Systeme, unempfindlich gegenüber Änderungen der Abfallmenge", "• geringerer Investitionsbedarf", "• Anlagen bei kleinen Durchsätzen (30.000–100.000 t/a) rentabel", "Nachteile:", "• Deponienachsorge notwendig", "• höhere Betriebskosten", "• bei aerober Behandlung keine Nutzung der enthaltenen Energie", "• Markt für Ersatzbrennstoff unsicher"]}]}, {"topic": "Biologische Abfallbehandlung", "questions": [{"q": "1. Nennen Sie zwei Verfahren zur Behandlung von organischen Abfällen. Worin liegt der Hauptunterschied?", "a": ["– Anaerobe Behandlung von organischen Abfällen (Vergärung/Fermentation): Nicht verbrauchte Energie verbleibt im Substrat und kann technisch genutzt werden.", "– Aerobe Behandlung von organischen Abfällen (Kompostierung): Die Energie wird im Kompostierprozess weitestgehend verbraucht."]}, {"q": "2. Beschreiben Sie stichwortartig den Aufbau einer Biogasanlage.", "a": ["– Anlieferung fester und flüssiger Rohstoffe", "– Waage/Sichtkontrolle/Probenahme", "– feste Rohstoffe werden zerkleinert und im Stofflöser angemaischt; hier auch Entfernung von Störstoffen über Schwimm-Sink-Trennung", "– flüssige Rohstoffe werden gemeinsam mit den gelösten, ehemals festen Stoffen in einen Homogenisierungsreaktor gepumpt und dort feinst zerkleinert", "– Hygienisierung bei 70 °C für 1 Stunde (nicht überall erforderlich/vorhanden)", "– Fermentation/Vergärung in Biogasreaktoren, kann auf unterschiedliche Weise erfolgen (s. extra Folie), Verweilzeit 15–20 Tage", "– entstehendes Biogas wird aufgereinigt (Entschwefelung, Entfeuchtung), in einem Gasspeicher als Puffer für schwankende Mengen zwischengespeichert und in einem Blockheizkraftwerk verstromt", "– entstandener Gärrückstand (nicht abgebaute Biomasse) wird der Verwertung zugeführt (als Flüssigdünger oder nach Entwässerung und Nachrotte als Kompost)", "– gebildete Wärme kann über Wärmetauscher prozessintern genutzt werden"]}, {"q": "3. Bei der Vergärung gibt es eine ganz spezielle Organismengruppe: welche ist das und was ist an ihr so besonders? Nennen Sie drei Merkmale.", "a": ["– Methanogene Bakterien", "1. einheitlicher Stoffwechseltyp (methanogen)", "2. anderer Mechanismus der CO2-Fixierung", "3. alle strikt anaerob, weil beide Enzyme zum Schutz vor Luftsauerstoff fehlen", "4. charakteristische Zusammensetzung der Zellbestandteile"]}, {"q": "4. Welche Arten von Vergärungsverfahren gibt es? Charakterisieren Sie jedes Verfahren mit einem Stichwort.", "a": ["Einstufiges Verfahren:", "– alle Schritte in einem Reaktor", "– Vorteile: technisch einfach, relativ billig", "– Nachteile: Übersäuerung möglich, längere Prozessdauer wegen gegenseitiger Hemmung", "Zweistufiges Verfahren:", "– Trennung Hydrolyse/Acidogenese von Acetogenese/Methanogenese; teilweise mit fest/flüssig-Trennung verbunden", "– Vorteile: höhere Leistungen und Methanausbeuten, biologisch stabilere Betriebsführung; ggf. Nutzung der Hochleistungsreaktoren der Abwasserreinigung möglich", "– Nachteile: teurer wegen aufwendiger Regelungstechnik"]}, {"q": "5. Wie ist Biogas zusammengesetzt und wozu wird es im Regelfall genutzt?", "a": ["– entstehendes Biogas enthält neben Spurengasen wie H2, O2, N2, NO2 u.a. durchschnittlich:", "– an Methan (CH4): 50–65–75 %", "– an Kohlendioxid (CO2): 25–34–49 %", "– an Schwefelwasserstoff (H2S): 0–1 %", "– wird zur Verstromung in Blockheizkraftwerken verwendet"]}, {"q": "6. Beschreiben Sie stichwortartig den Aufbau einer Kompostierungsanlage.", "a": ["– Annahmebereich mit Waage/Sichtkontrolle", "– Flachbunker zur Lagerung", "– Grobaufbereitung: Siebung, Zerkleinerung, Störstoffabscheidung, Einstellung von Wassergehalt und C/N-Verhältnis", "– Rottesystem (s. Extrafolien)", "– Feinaufbereitung: Nachzerkleinerung, Abtrennung verbliebener Störstoffe, Siebung, ggf. Veredelung, z.T. Absackung", "– Ausgangsbereich mit Produkt-/Störstofflager"]}, {"q": "7. Bei der Kompostierung gibt es eine ganz spezielle Organismengruppe: welche ist das und was ist an ihr so besonders? Nennen Sie zwei Merkmale.", "a": ["– Actinomyceten", "1. die Fähigkeit verschiedener Stämme (z.B. Streptomyces) zur Bildung von Antibiotika (wichtig für die Hygienisierung organischen Materials)", "2. die Fähigkeit zum Abbau von Chitin, Cellulose, Lignin, Paraffin, Gummi und anderen schwer zersetzbaren Naturstoffen (eines der Abbauprodukte ist Geosmin)"]}, {"q": "8. Benennen Sie die Phasen des Rotteprozesses und zeichnen Sie den Graphen eines typischen Rotteverlaufes. Markieren Sie auch den Bereich der Intensivrotte.", "a": ["– Beginn der Intensivrotte mit Temperaturen bis zu 70 °C; Maximaltemperatur wird nach 3–5 Tagen erreicht", "(Phasen + Graph des Rotteverlaufs mit markiertem Intensivrotte-Bereich einzeichnen – siehe Folien)"]}, {"q": "9. Nennen Sie die verschiedenen statischen Rotteverfahren.", "a": ["– zu kompostierendes Material ruht; Belüftung natürlich oder künstlich", "– offene Mietenkompostierung mit natürlicher Belüftung", "– Tafelmiete mit künstlicher Belüftung in geschlossener Rottehalle", "– Zeilenkompostierung", "– Tunnelkompostierung", "– Boxen- oder Containerkompostierung"]}]}, {"topic": "Thermische Abfallbehandlung", "questions": [{"q": "1. Mit der thermischen Abfallbehandlung werden aus abfallwirtschaftlicher Sicht viele Ziele erreicht – nennen Sie mindestens x.", "a": ["– Hygienisierung", "– Volumenreduktion zur Einsparung von Deponieraum", "– Energiegewinnung (Dampf, Wärme, Strom)", "– Vernichtung von Schadstoffen", "– Inertisierung verbleibender Schadstoffe", "– Erzeugung verwertbarer Reststoffe (z.B. Schlacke)", "– Reduzierung der Umweltbelastungen auf ein Mindestmaß", "– Zuverlässigkeit (hohe Verfügbarkeit)", "– Flexibilität hinsichtlich der Abfallqualität", "– Sicherheit (Arbeit, Umgebung)"]}, {"q": "2. Ordnen Sie folgende Brennstoffe nach ihrem Heizwert: trockenes Holz, Erdgas, Braunkohle, Steinkohle, Heizöl, Hausmüll (ohne Bioabfall). (Nutzen Sie die Zeichen <, =, >)", "a": ["Erdgas > Heizöl > Steinkohle > trockenes Holz > Hausmüll > Braunkohle"]}, {"q": "3. Beschriften Sie die Hauptkomponenten einer MVA (Skizze wird gestellt).", "a": ["→ Beschriftungsaufgabe (Skizze wird gestellt). Hauptkomponenten: Bunker, Verbrennungsofen (Rost), Kessel, Turbine, Rauchgasreinigung – siehe Thermische_Abfallbehandlung.pdf."], "note": true}, {"q": "4. Welchem Zweck dienen Bunker, Verbrennungsofen, Kessel und Turbine sowie die Rauchgasreinigung?", "a": ["– Bunker: Lagerung des Abfalls", "– Verbrennungsofen: thermische Umsetzung", "– Kessel und Turbine: Energienutzung", "– Rauchgasreinigung: Abtrennung von Schadstoffen"]}, {"q": "5. Welche Feuerungssysteme gibt es und wofür eignen sie sich am besten?", "a": ["– Rostfeuerung für inhomogenen Abfall (Hausmüll)", "– Wirbelschichtfeuerung für aufbereiteten, eher homogenen Abfall (Holz, Klärschlamm, homog. EBS), Kohle", "– Drehrohrofen häufig für Sondermüll"]}, {"q": "6. Was für Rostsysteme gibt es und woraufhin sind diese optimiert?", "a": ["– Vorschubrost", "– Gegenschubrost", "– Rückschubrost", "– Walzenrost", "– Die Rostsysteme ermöglichen die Optimierung der Feuerungsparameter: Müllschichthöhe, Schürintensität, Verweilzeit/Ausbrandqualität"]}, {"q": "7. Nennen Sie die fünf Schritte des Verbrennungsprozesses.", "a": ["1. Beginn der Abfalltrocknung und -entgasung durch Flammenstrahlung", "2. Resttrocknung, Vergasung und Beginn der Primärverbrennung", "3. Primärverbrennung: Überführung der festen Abfallbestandteile in den gasförmigen Zustand", "4. Vollständiger Schlackenausbrand", "5. Sekundärverbrennung: Oxidation der unverbrannten Gase mit Verbrennungsluft"]}, {"q": "8. Welche Arten von Verbrennungsluft gibt es und wo werden sie eingeblasen?", "a": ["– Primärluft: strömt von unten durch das Rost, Sauerstoffeintrag, Primärverbrennung", "– Sekundärluft: strömt seitlich in den Schornstein oberhalb der Flamme zur Verwirbelung der Verbrennungsgase, Sekundärverbrennung", "– Tertiärluft: strömt an den Schornsteinwänden hoch zur Seitenwandkühlung"]}, {"q": "9. Nennen Sie die Hauptprobleme, die im Kesselbereich auftreten und worin sie begründet sind. Wie kann Abhilfe geschaffen werden?", "a": ["→ Keine ausformulierte Antwort im Katalog. Siehe Thermische_Abfallbehandlung.pdf (z.B. Korrosion und Verschmutzung/Verschlackung durch aggressive Rauchgase; Abhilfe u.a. durch Materialwahl, Reinigung, Temperaturführung)."], "note": true}, {"q": "10. Die potentiellen Emissionen einer MVA lassen sich in acht Gruppen einteilen; nennen Sie aus jeder Gruppe eine Beispielsubstanz.", "a": ["– Flugstaub, Salze", "– Schwefeloxide: Schwefeldioxid, Schwefeltrioxid", "– Halogenverbindungen: Chlorwasserstoff, Fluorwasserstoff", "– Stickoxide: Stickstoffmonoxid, Stickstoffdioxid, Distickstoffoxid, Distickstofftetraoxid", "– Kohlenstoffverbindungen: Kohlenmonoxid, Kohlendioxid, Ruß", "– Schwermetalle: Klasse I: Cd, Tl; Klasse II: Hg; Klasse III: As, Co, Cr, Cu, Mn, Ni, Pb, Sb, Sn, V", "– Dioxine, Furane (PCDD, PCDF)", "– Wasserdampf"]}, {"q": "11. Nennen Sie drei Verfahren, um partikelförmige Verunreinigungen aus der Abluft einer MVA abzuscheiden. Nach welchem Prinzip arbeiten sie?", "a": ["– Zyklon: Trägheit der Staubpartikel", "– Gewebefilter: Größe der Staubpartikel", "– Elektrofilter: Ionisierung der Staubpartikel und Abscheidung im elektromagnetischen Feld"]}, {"q": "12. Wie können saure, gasförmige Schadstoffe und Schwermetallverbindungen aus der Abluft einer MVA abgeschieden werden?", "a": ["– Adsorption: Anlagerung von Gas- oder Flüssigkeitskomponenten an oberflächenaktiven Stoffen (Aktivkohle, Kalk etc.)"]}, {"q": "13. Welche technischen Verfahren der Rauchgas-Entstickung gibt es, worin unterscheiden sie sich und welche chemische Reaktion findet dort statt?", "a": ["– Selektive nicht katalytische Reduktion (SNCR), Temp. 900–1000 °C, NOx → N2, H2O", "– Selektive katalytische Reduktion (SCR), Temp. 180–350 °C, NOx → N2, H2O"]}]}, {"topic": "Behandlung von gefährlichen Abfällen", "questions": [{"q": "1. Welche Merkmale sind für gefährliche Abfälle charakteristisch? Nennen Sie drei Beispiele.", "a": ["– besonders schadstoffhaltige Rückstände in fester, pastöser oder flüssiger Form", "– in besonderem Maße gefährlich für Gesundheit, Luft oder Wasser, explosibel, brennbar oder pathogen", "– sehr breites Spektrum an Abfällen, die sich hinsichtlich ihrer Behandlung und Entsorgung kaum vereinheitlichen lassen"]}, {"q": "2. Welche Entsorgungsoptionen gibt es für gefährliche Abfälle; welche eignen sich für welchen Entsorgungsweg?", "a": ["– Verwertung → Einsatz als Sekundärrohstoff", "– Deponierung ohne Vorbehandlung", "– Deponierung mit Vorbehandlung"]}, {"q": "3. Nennen Sie zwei Möglichkeiten einer chemisch-physikalischen Behandlung von Sonderabfällen. Welche Abfälle lassen sich damit jeweils unschädlich machen?", "a": ["– Abtrennung, Immobilisierung oder Umwandlung von Stoffen; Schädlichkeit vermindern", "– Beispiele: Säuren, Laugen, schwermetallhaltige Lösungen, Emulsionen, cyanidhaltige Lösungen"]}, {"q": "4. Für eine oberirdische Ablagerung müssen auch gefährliche Abfälle bestimmte Zuordnungswerte einhalten – welche sind das? Nennen Sie x Beispiele.", "a": ["– Abfall muss die Zuordnungswerte aus Anhang D einhalten. Dort sind Anforderungen definiert:", "– an die Festigkeit,", "– den Gehalt der organischen Substanz und", "– die Löslichkeit von Schwermetallen"]}, {"q": "5. Worin liegt der Sinn einer unterirdischen Ablagerung von Sonderabfällen? Wie hat die Ablagerung zu erfolgen? Es gibt Stoffe, die hierfür nicht geeignet sind; nennen Sie zwei Gründe, die dafür verantwortlich sein könnten.", "a": ["– Ziel: dauerhafte Fernhaltung der Abfälle von der Biosphäre", "– Ablagerung hat so zu erfolgen, dass keine Nachsorge nötig ist", "– ausgeschlossen sind Abfälle, die:", "– penetrant riechen", "– durch Reaktionen untereinander oder mit dem Salzgestein zu Volumenvergrößerungen, zur Bildung selbstentzündlicher, toxischer/explosibler Stoffe führen, soweit die Betriebssicherheit und die Integrität der Barrieren dadurch in Frage gestellt werden", "– aufgrund der Partialdrücke ihrer Bestandteile toxische Gaskonzentrationen verursachen"]}, {"q": "6. Wie ist ein Drehrohrofen aufgebaut? Welche Temperaturzonen gibt es und wozu dient die Nachbrennkammer?", "a": ["– Durchführung in Drehrohröfen mit Nachbrennkammer:", "– Einlaufzone mit bis zu 400 °C", "– Schmelz- und Verdampfungszone bis ca. 900 °C", "– Verbrennungszone bis ca. 1.200 °C", "– Ausbrenn- und Nachbrennzone bis max. 1.500 °C"]}]}, {"topic": "Luftschadstoffe", "questions": [{"q": "1. Skizzieren Sie die drei Strategien, die im aktuellen Umweltaktionsprogramm der EG zur Erreichung einer guten Luftqualität vorgesehen sind.", "a": ["1. Strategie: Festlegung von Luftqualitätsstandards zum Schutz und zur Gefahrenabwehr; Einhaltung durch geeignete Instrumente wie Luftreinhaltepläne (Alarmschwellen, Grenzwerte, Aktionspläne u.a.) und immissionsschutzrechtl. Anlagengenehmigung abzusichern", "2. Strategie: Emissionsbegrenzende Anforderungen für relevante Quellen nach Stand der Technik oder BAT, auch durch Produktverbote", "3. Strategie: Festlegung von Emissionshöchstmengen durch Begrenzungen der nationalen Emissionsfrachten für relevante Massenschadstoffe (nationale Deckelung der Emissionen aller Quellen)"]}, {"q": "2. Zählen Sie fünf der wichtigsten Luftschadstoffe auf und nennen Sie in Stichworten die Gründe für ihre Schädlichkeit.", "a": ["– Schwefel- und Stickstoffverbindungen: Versauerung in Boden, Änderung von Menge und Zusammensetzung des Nährstoffangebotes, Verschwinden pH-sensitiver Pflanzen, Verringerung der Biodiversität", "– Schwefeloxide und Salzsäure: Rauchgasverwitterung", "– Stickstoffverbindungen: Eutrophierung, verändertes Verhältnis von Mg, P, K, C, unausgewogener Stoffwechselstatus, dadurch verminderte Toleranz gegenüber Stress (z.B. durch Frost, Trockenheit, Schädlinge), Hauptursache für die sinkende Artenvielfalt in Europa", "– Kohlendioxid, Methan, SF6, NF3: klimaverändernd (Treibhauseffekt)", "– Dioxine: giftig"]}, {"q": "3. Wer sind die Haupt-Emittenten für diese Luftschadstoffe?", "a": ["– nicht-industrielle Feuerungsanlagen (26 %)", "– industrielle Verbrennungsprozesse (20 %)", "– Produktionsprozesse (19 %)"]}]}, {"topic": "Abgasreinigung", "questions": [{"q": "1. Was versteht man unter Absorption? Nennen Sie drei gängige Absorptionsmittel und ihren Einsatzzweck.", "a": ["– das Aufnehmen von Gasen (z.B. SOx, HCl, HF, organische Stoffe) durch feste oder flüssige Sorptionsmittel, wobei sich die Gase in diesen Mitteln lösen", "– Wasser (in der Regel), Öle (bei org. Substanzen), Calciumhydroxid (für Rauchgasentschwefelung)"]}, {"q": "2. Was versteht man unter Adsorption? Nennen Sie drei wichtige Adsorptionsmittel; was wird mit ihrer Hilfe abgeschieden?", "a": ["– Anreicherung von Stoffen aus Gasen oder Flüssigkeiten an der Oberfläche eines Festkörpers", "– Aktivkohle (zur Abscheidung von Hg und Dioxinen),", "– Zeolithe (Lösemittel, Alkohole, Benzin),", "– Kalksteingranulat (Fluorwasserstoff)"]}, {"q": "3. Was ist der Unterschied zwischen der thermischen und der katalytischen Nachverbrennung? Was benötigen Sie jeweils dazu?", "a": ["– Thermische Nachverbrennung: Oxidation von Kohlenwasserstoffen bei Temperaturen zwischen 750 °C und 1000 °C (üblich sind 900 °C) zu CO2 und Wasser", "– Katalytische Nachverbrennung: vgl. thermische Nachverbrennung, aber bei Temperaturen zwischen 250 °C und 650 °C, dadurch Energieeinsparung von 40–60 % möglich"]}, {"q": "4. Mit welchen Verfahren können Sie Stickstoffverbindungen abreinigen? Nennen Sie die Reaktionsformel und die erforderliche Temperatur für eine Reduktion von einem Stickoxid zu Stickstoff.", "a": ["– SNCR-Verfahren zur Entstickung von Abgasen (De-NOx) (selective non-catalytic reduction), mittels Ammoniak:", "4 NH3 + 6 NO → 5 N2 + 6 H2O", "optimale Reaktionstemperatur 900 °C bis 950 °C"]}, {"q": "5. Nennen Sie zwei Verfahren zur biologischen Abluftreinigung und skizzieren Sie einen der Verfahrensabläufe.", "a": ["– Biofilter, Biowäscher/Biorieselreaktor", "(Verfahrensablauf Biofilter skizzieren – siehe Folien)"]}]}, {"topic": "Rechtliche Grundlagen in der Umwelttechnik", "questions": [{"q": "1. Skizzieren Sie die Hierarchie der Umweltgesetzgebung (ohne Beispiele).", "a": ["→ Zeichnung erforderlich (siehe Folien / Einführung_und_jur._Grundlagen.pdf): Hierarchie z.B. EU-Recht → Grundgesetz → Gesetze → Verordnungen → untergesetzliches Regelwerk (Verwaltungsvorschriften, Technische Regeln)."], "note": true}, {"q": "2. Was bedeutet der Begriff „Basler Übereinkommen“? (keine Jahreszahlen)", "a": ["– „Basler Übereinkommen über die Kontrolle der grenzüberschreitenden Verbringung gefährlicher Abfälle und ihrer Entsorgung“", "– Vertragspartner: etwa 170 Staaten"]}, {"q": "3. (Frage 3 im Katalog nicht enthalten – Nummerierung springt von 2 auf 4.)", "a": ["→ Nicht im Fragenkatalog enthalten."], "note": true}, {"q": "4. Was ist der Unterschied zwischen einer EU-Verordnung und einer EU-Richtlinie?", "a": ["→ Keine ausformulierte Antwort im Katalog. Merksatz (siehe Einführung_und_jur._Grundlagen.pdf): EU-Verordnung gilt unmittelbar in allen Mitgliedstaaten; EU-Richtlinie gibt ein Ziel vor und muss erst in nationales Recht umgesetzt werden."], "note": true}, {"q": "5. Nennen Sie das der Wasserreinhaltung zugrunde liegende Gesetz samt der zugehörigen Verordnung und skizzieren Sie mit wenigen Stichworten deren Inhalt.", "a": ["– Wasserhaushaltsgesetz WHG, Abwasserverordnung AbwV", "– Zweck des Gesetzes: durch eine nachhaltige Gewässerbewirtschaftung die Gewässer als Bestandteil des Naturhaushaltes, als Lebensgrundlage des Menschen, als Lebensraum für Tiere und Pflanzen sowie als nutzbares Gut zu schützen.", "– Betrifft oberirdische Gewässer (O), Küstengewässer (K) und Grundwasser (G)", "– Regelt: Aufstauen und Absenken (O); Entnehmen und Ableiten von Wasser (O); Entnehmen von festen Stoffen, soweit dies auf den Zustand des Gewässers oder auf den Wasserabfluss einwirkt (O); Einbringen und Einleiten von Stoffen (O,K,G); Entnehmen, Zutagefördern, Zutageleiten und Ableiten (G); Aufstauen, Absenken und Umleiten durch Anlagen, die hierzu bestimmt oder geeignet sind (G)", "– Schreibt für die Abwasserbehandlung den Stand der Technik vor", "– Abwasserverordnung AbwV: Regelt die Mindestanforderungen, die für Erlaubnisse zum Einleiten von Abwasser in Gewässer festzusetzen sind (§ 3 sowie 57 Anhänge zu speziellen Industriezweigen, Bsp: 1 Häusliches und kommunales Abwasser, 37 Herstellung anorganischer Pigmente, 40 Metallbearbeitung/Metallverarbeitung, 49 Mineralölhaltiges Abwasser etc.); außerdem Analyse- und Messverfahren (§ 4 und Anlage zu § 4)"]}, {"q": "6. Nennen Sie das der Luftreinhaltung zugrunde liegende Gesetz. Was ist daran so besonders und welche Verordnungen gehören dazu? (sehr kurz zu beantworten)", "a": ["– BImSchG, Bundes-Immissions-Schutz-Gesetz; Vorbild im Umweltrecht, da Schutz- u. Abwehrprinzip, Vorsorge statt Nachsorge", "– BImSchV, Bundes-Immissions-Schutz-Verordnung"]}, {"q": "7. Nennen Sie das der Bodenreinhaltung zugrunde liegende Gesetz samt der zugehörigen Verordnung (die finden Sie in der Datei über Altlastensanierung).", "a": ["– BBodSchG, Bundes-Boden-Schutz-Gesetz; Schutz vor schädlichen Bodenveränderungen und zur Sanierung von Altlasten", "– Bundes-Boden-Schutz- und Altlastenverordnung"]}, {"q": "8. Was versteht man unter dem Begriff „untergesetzliches Regelwerk“? (sehr allgemein und knapp zu beantworten)", "a": ["– Technische Regelwerke (z.B. TRGS)", "– Technische Anleitungen (TA-Luft)", "– Gesetzliche Unfallversicherung mit ihren Richtlinien (GUV)"]}, {"q": "9. Was beinhaltet der 29. Abschnitt des Strafgesetzbuches? Geben Sie ein konkretes Beispiel an.", "a": ["– Straftaten gegen die Umwelt", "§ 324 Gewässerverunreinigungen", "§ 324a Bodenverunreinigungen", "§ 325 Luftverunreinigungen"]}]}];
-const STORE_KEY = "umwelttechnik_progress_v1";
+const KEY = "umwelttechnik_flashcards_v2";
+const MASTER = 3, MAXLVL = 3;
 
-/* ---- Persistenz (mit Fallback, falls localStorage blockiert) ---- */
-let done = {};
-try { done = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch(e){ done = {}; }
-function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(done)); }catch(e){} }
+let box = {};
+try{ box = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch(e){ box={}; }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(box)); }catch(e){} }
+function lvl(id){ return box[id]||0; }
 
-const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
-let TOTAL = 0;
-DATA.forEach((t,ti)=> t.questions.forEach((q,qi)=>{ q._id = ti+"-"+qi; TOTAL++; }));
+let ALL=[];
+DATA.forEach((t,ti)=> t.questions.forEach((q,qi)=> ALL.push({id:ti+"-"+qi, topic:t.topic, ti, q:q.q, a:q.a, note:!!q.note})));
 
-const main = document.getElementById("main");
-const chipsEl = document.getElementById("chips");
-
-/* ---- Chips ---- */
-let chipHtml = '<button class="chip active" data-target="all">Alle <small>('+TOTAL+')</small></button>';
-DATA.forEach((t,ti)=>{
-  chipHtml += '<button class="chip" data-target="topic-'+ti+'">'+(ti+1)+'. '+escapeHtml(shortTopic(t.topic))+' <small>('+t.questions.length+')</small></button>';
-});
-chipsEl.innerHTML = chipHtml;
-
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function shortTopic(s){ return s.replace(/ \(.*\)/,'').replace('Verwertung von ','').replace('Behandlung von ',''); }
-function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-/* ---- Themen & Karten rendern ---- */
-function renderLine(line){
-  const cls = /:$|^[A-Za-zÄÖÜ][^–•\d].*:$/.test(line.trim()) && line.trim().endsWith(":") ? "aline head" : "aline";
-  return '<p class="'+cls+'">'+escapeHtml(line)+'</p>';
+let currentDeck="all", weakOnly=false;
+let queue=[], pos=0, sessionKnow=0, sessionAgain=0, flipped=false;
+
+function deckCards(){ return currentDeck==="all"?ALL.slice():ALL.filter(c=>c.ti===+currentDeck); }
+
+function buildQueue(fromWeak){
+  let cards=deckCards();
+  if(fromWeak) cards=cards.filter(c=>lvl(c.id)<MASTER);
+  if(cards.length===0) cards=deckCards();
+  cards.sort((a,b)=> (lvl(a.id)-lvl(b.id)) || (Math.random()-.5));
+  queue=cards.map(c=>({...c})); pos=0; sessionKnow=0; sessionAgain=0;
+  document.getElementById("doneScreen").classList.remove("show");
+  render();
 }
 
-DATA.forEach((t,ti)=>{
-  const sec = document.createElement("section");
-  sec.className = "topic"; sec.id = "topic-"+ti;
-  let cards = "";
-  t.questions.forEach((q,qi)=>{
-    const isNote = q.note ? " note" : "";
-    const isDone = done[q._id] ? " done" : "";
-    cards += `
-      <article class="qcard${isNote}${isDone}" data-id="${q._id}" data-topic="${ti}">
-        <div class="qhead">
-          <button class="qmark" title="Als gelernt markieren" aria-label="Als gelernt markieren">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
-          </button>
-          <div class="qtext">${escapeHtml(q.q)}</div>
-          <div class="qtoggle">Antwort</div>
-        </div>
-        <div class="answer"><div><div class="answer-inner">
-          ${q.a.map(renderLine).join("")}
-        </div></div></div>
-      </article>`;
-  });
-  sec.innerHTML = `
-    <div class="topic-head">
-      <span class="topic-num">${String(ti+1).padStart(2,'0')}</span>
-      <h2>${escapeHtml(t.topic)}</h2>
-      <span class="topic-prog" id="tp-${ti}">0/${t.questions.length}</span>
-    </div>
-    ${cards}`;
-  main.appendChild(sec);
-});
+const flip=document.getElementById("flip");
+const frontQ=document.getElementById("frontQ"), frontTag=document.getElementById("frontTag"), frontLvl=document.getElementById("frontLvl");
+const backBody=document.getElementById("backBody"), backTag=document.getElementById("backTag"), backLvl=document.getElementById("backLvl"), backFace=document.getElementById("backFace");
+const progFill=document.getElementById("progFill"), progLeft=document.getElementById("progLeft"), progRight=document.getElementById("progRight");
+const doneScreen=document.getElementById("doneScreen"), controls=document.getElementById("controls");
 
-/* ---- Interaktion ---- */
-main.addEventListener("click", (e)=>{
-  const mark = e.target.closest(".qmark");
-  const card = e.target.closest(".qcard");
-  if(!card) return;
-  if(mark){
-    const id = card.dataset.id;
-    if(done[id]) delete done[id]; else done[id]=1;
-    card.classList.toggle("done", !!done[id]);
-    save(); updateProgress();
-    return;
+function setLvlEl(el,id){
+  const l=lvl(id);
+  el.className="lvl"+(l===0?" new":"");
+  let s=""; for(let i=0;i<MAXLVL;i++) s+='<span class="pip'+(i<l?' on':'')+'"></span>';
+  el.innerHTML=s+'&nbsp;'+(l===0?'neu':(l>=MASTER?'sitzt':'Lvl '+l));
+}
+function renderAnswer(a){
+  return a.map(line=>{
+    const t=line.trim();
+    const head=t.endsWith(":")&&!t.startsWith("–")&&!t.startsWith("•");
+    return '<p class="a-line'+(head?' head':'')+'">'+escapeHtml(line)+'</p>';
+  }).join("");
+}
+function render(){
+  if(pos>=queue.length){ showDone(); return; }
+  doneScreen.classList.remove("show");
+  const c=queue[pos];
+  flipped=false; flip.classList.remove("flipped"); controls.classList.add("answer-hidden");
+  frontTag.textContent=shortTopic(c.topic); frontTag.className="tag";
+  frontQ.textContent=c.q;
+  setLvlEl(frontLvl,c.id); setLvlEl(backLvl,c.id);
+  backTag.textContent=c.note?"Skizze / Hinweis":"Antwort"; backTag.className="tag "+(c.note?"note":"a");
+  backFace.classList.toggle("note",c.note);
+  backBody.innerHTML=renderAnswer(c.a); backBody.scrollTop=0;
+  updateProg();
+}
+function updateProg(){
+  const cards=deckCards(), mastered=cards.filter(c=>lvl(c.id)>=MASTER).length;
+  progFill.style.width=Math.round(mastered/cards.length*100)+"%";
+  progLeft.innerHTML="noch <b>"+Math.max(0,queue.length-pos)+"</b> in Runde";
+  progRight.innerHTML="<b>"+mastered+"</b> / "+cards.length+" gemeistert";
+}
+function doFlip(){
+  if(pos>=queue.length) return;
+  flipped=!flipped; flip.classList.toggle("flipped",flipped);
+  controls.classList.toggle("answer-hidden",!flipped);
+}
+function insertAt(i,card){ i=Math.min(queue.length, Math.max(pos+1,i)); queue.splice(i,0,card); }
+function mark(known){
+  if(pos>=queue.length) return;
+  const c=queue[pos]; let l=lvl(c.id);
+  if(known){
+    l=Math.min(MAXLVL,l+1); box[c.id]=l; sessionKnow++;
+    if(l<MASTER) insertAt(pos+6+l*4, {...c});
+  } else {
+    l=Math.max(0,l-1); box[c.id]=l; sessionAgain++;
+    insertAt(pos+2, {...c});
+    if(Math.random()<.5) insertAt(pos+5, {...c});
   }
-  card.classList.toggle("open");
-});
-
-/* ---- Fortschritt ---- */
-const ring=document.getElementById("ring"), ringPct=document.getElementById("ringPct");
-const doneCount=document.getElementById("doneCount"), totalCount=document.getElementById("totalCount");
-totalCount.textContent = TOTAL;
-function updateProgress(){
-  const d = Object.keys(done).length;
-  const pct = TOTAL? Math.round(d/TOTAL*100):0;
-  ring.style.setProperty("--p", pct); ringPct.textContent = pct+"%";
-  doneCount.textContent = d;
-  DATA.forEach((t,ti)=>{
-    const c = t.questions.filter(q=>done[q._id]).length;
-    const el = document.getElementById("tp-"+ti);
-    if(el) el.textContent = c+"/"+t.questions.length;
-  });
+  save(); pos++; render();
 }
-updateProgress();
+function showDone(){
+  doneScreen.classList.add("show"); controls.classList.add("answer-hidden"); flip.classList.remove("flipped");
+  document.getElementById("doneKnow").textContent=sessionKnow;
+  document.getElementById("doneAgain").textContent=sessionAgain;
+  const cards=deckCards(), mastered=cards.filter(c=>lvl(c.id)>=MASTER).length;
+  const deckName=currentDeck==="all"?"Alle Themen":shortTopic(DATA[+currentDeck].topic);
+  document.getElementById("doneSub").textContent=deckName+" · "+mastered+" / "+cards.length+" gemeistert";
+  const allM=mastered===cards.length;
+  document.getElementById("doneEmoji").textContent=allM?"🏆":"✅";
+  document.getElementById("doneTitle").textContent=allM?"Alles gemeistert!":"Runde geschafft!";
+  document.getElementById("weakBtn").style.display=allM?"none":"";
+  progFill.style.width=Math.round(mastered/cards.length*100)+"%"; progLeft.innerHTML="Runde fertig";
+}
 
-/* ---- Buttons ---- */
-const all = sel => Array.from(document.querySelectorAll(sel));
-document.getElementById("btnOpenAll").onclick = ()=> all(".qcard:not([hidden])").forEach(c=>c.classList.add("open"));
-document.getElementById("btnCloseAll").onclick = ()=> all(".qcard").forEach(c=>c.classList.remove("open"));
+document.getElementById("btnFlip").onclick=doFlip;
+document.getElementById("btnKnow").onclick=()=>{ flipped?mark(true):doFlip(); };
+document.getElementById("btnAgain").onclick=()=>{ flipped?mark(false):doFlip(); };
+document.getElementById("weakBtn").onclick=()=>buildQueue(true);
+document.getElementById("restartBtn").onclick=()=>buildQueue(false);
+document.getElementById("chooseBtn").onclick=openSheet;
+flip.addEventListener("click",()=>{ if(!dragging) doFlip(); });
 
-let examMode=false;
-document.getElementById("btnExam").onclick = (e)=>{
-  examMode=!examMode;
-  e.target.classList.toggle("active", examMode);
-  all(".qcard").forEach(c=>c.classList.remove("open"));
-  e.target.textContent = examMode? "Prüfungsmodus: an" : "Prüfungsmodus";
-};
-
-let hideDone=false;
-document.getElementById("btnHideDone").onclick=(e)=>{
-  hideDone=!hideDone; e.target.classList.toggle("active", hideDone);
-  e.target.textContent = hideDone? "Gelernte ausgeblendet":"Gelernte ausblenden";
-  applyFilters();
-};
-
-document.getElementById("btnReset").onclick=()=>{
-  if(confirm("Wirklich den gesamten Lernfortschritt löschen?")){
-    done={}; save();
-    all(".qcard").forEach(c=>c.classList.remove("done"));
-    updateProgress();
+let startX=0,startY=0,dragging=false,curDX=0;
+const badgeKnow=document.getElementById("badgeKnow"), badgeAgain=document.getElementById("badgeAgain");
+flip.addEventListener("touchstart",e=>{ if(pos>=queue.length)return; startX=e.touches[0].clientX; startY=e.touches[0].clientY; dragging=false; },{passive:true});
+flip.addEventListener("touchmove",e=>{
+  if(pos>=queue.length)return;
+  const dx=e.touches[0].clientX-startX, dy=e.touches[0].clientY-startY;
+  if(Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)){ dragging=true; curDX=dx;
+    flip.style.transition="none";
+    const base=flipped?"rotateY(180deg)":"";
+    flip.style.transform=base+" translateX("+dx+"px) rotate("+(dx/28)+"deg)";
+    badgeKnow.style.opacity=dx>40?Math.min(1,(dx-40)/60):0;
+    badgeAgain.style.opacity=dx<-40?Math.min(1,(-dx-40)/60):0;
   }
-};
-
-/* ---- Suche + Filter ---- */
-const search=document.getElementById("search");
-let activeTopic="all";
-chipsEl.addEventListener("click",(e)=>{
-  const chip=e.target.closest(".chip"); if(!chip) return;
-  all(".chip").forEach(c=>c.classList.remove("active")); chip.classList.add("active");
-  activeTopic=chip.dataset.target;
-  if(activeTopic!=="all"){
-    const target=document.getElementById(activeTopic);
-    if(target) target.scrollIntoView({behavior:"smooth", block:"start"});
-  } else window.scrollTo({top:0,behavior:"smooth"});
-  applyFilters();
+},{passive:true});
+flip.addEventListener("touchend",e=>{
+  if(pos>=queue.length)return;
+  flip.style.transition=""; flip.style.transform="";
+  badgeKnow.style.opacity=0; badgeAgain.style.opacity=0;
+  if(dragging){
+    if(curDX>70) mark(true); else if(curDX<-70) mark(false);
+    setTimeout(()=>{dragging=false;},50);
+  }
+  curDX=0;
+});
+document.addEventListener("keydown",e=>{
+  if(document.getElementById("sheet").classList.contains("show"))return;
+  if(e.key===" "||e.key==="Enter"){ e.preventDefault(); doFlip(); }
+  else if(e.key==="ArrowRight"){ flipped?mark(true):doFlip(); }
+  else if(e.key==="ArrowLeft"){ flipped?mark(false):doFlip(); }
 });
 
-search.addEventListener("input", applyFilters);
-
-function applyFilters(){
-  const term = search.value.trim().toLowerCase();
-  DATA.forEach((t,ti)=>{
-    const sec=document.getElementById("topic-"+ti);
-    let visibleInTopic=0;
-    t.questions.forEach(q=>{
-      const card=sec.querySelector('[data-id="'+q._id+'"]');
-      const hay=(q.q+" "+q.a.join(" ")).toLowerCase();
-      let show = true;
-      if(term) show = hay.includes(term);
-      if(hideDone && done[q._id]) show=false;
-      card.hidden=!show;
-      if(show) visibleInTopic++;
-      // Highlight
-      const qt=card.querySelector(".qtext");
-      qt.innerHTML = highlight(q.q, term);
-      if(term && show) card.classList.add("open");
-    });
-    sec.hidden = visibleInTopic===0;
-  });
-  // empty state
-  let anyVisible = all(".qcard:not([hidden])").length>0;
-  let emptyEl=document.getElementById("emptyState");
-  if(!anyVisible){
-    if(!emptyEl){
-      emptyEl=document.createElement("div");
-      emptyEl.id="emptyState"; emptyEl.className="empty";
-      emptyEl.textContent="Keine Treffer – anderen Suchbegriff versuchen.";
-      main.appendChild(emptyEl);
-    }
-  } else if(emptyEl){ emptyEl.remove(); }
+const sheet=document.getElementById("sheet"), backdrop=document.getElementById("sheetBackdrop"), sheetList=document.getElementById("sheetList");
+function buildSheet(){
+  let html=deckItem("all","Alle Themen",ALL,currentDeck==="all","★");
+  DATA.forEach((t,ti)=>{ html+=deckItem(String(ti),t.topic,ALL.filter(c=>c.ti===ti),currentDeck===String(ti),String(ti+1)); });
+  sheetList.innerHTML=html;
 }
-
-function highlight(text, term){
-  const safe=escapeHtml(text);
-  if(!term) return safe;
-  try{
-    const re=new RegExp("("+term.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig");
-    return safe.replace(re,"<mark>$1</mark>");
-  }catch(e){ return safe; }
+function deckItem(val,name,cards,active,num){
+  const m=cards.filter(c=>lvl(c.id)>=MASTER).length, total=cards.length, pct=total?Math.round(m/total*100):0;
+  return '<div class="deck-item'+(active?' active':'')+'" data-deck="'+val+'">'
+    +'<span class="num">'+num+'</span><div class="di-main"><div class="t">'+escapeHtml(name)+'</div>'
+    +'<div class="m">'+m+' / '+total+' gemeistert</div></div>'
+    +'<div class="mini"><i style="width:'+pct+'%"></i></div></div>';
 }
-
-/* ---- To top ---- */
-const toTop=document.getElementById("toTop");
-window.addEventListener("scroll", ()=>{ toTop.classList.toggle("show", window.scrollY>600); });
-toTop.onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
-
-/* ---- Keyboard: "/" fokussiert Suche ---- */
-document.addEventListener("keydown",(e)=>{
-  if(e.key==="/" && document.activeElement!==search){ e.preventDefault(); search.focus(); }
-  if(e.key==="Escape" && document.activeElement===search){ search.value=""; applyFilters(); search.blur(); }
+function openSheet(){ buildSheet(); backdrop.classList.add("show"); sheet.classList.add("show"); }
+function closeSheet(){ backdrop.classList.remove("show"); sheet.classList.remove("show"); }
+document.getElementById("deckBtn").onclick=openSheet;
+backdrop.onclick=closeSheet;
+sheetList.addEventListener("click",e=>{
+  const it=e.target.closest(".deck-item"); if(!it)return;
+  currentDeck=it.dataset.deck;
+  document.getElementById("deckLbl").textContent=currentDeck==="all"?"Alle Themen":shortTopic(DATA[+currentDeck].topic);
+  closeSheet(); buildQueue(weakOnly);
 });
+document.getElementById("optWeak").onclick=(e)=>{ weakOnly=!weakOnly; document.getElementById("weakLbl").textContent=weakOnly?"Alle Karten":"Nur schwache Karten"; e.currentTarget.style.borderColor=weakOnly?"var(--green)":""; };
+document.getElementById("optReset").onclick=()=>{ if(confirm("Alle Karten-Level wirklich zurücksetzen?")){ box={}; save(); buildSheet(); buildQueue(weakOnly); } };
+
+let sy=0;
+sheet.addEventListener("touchstart",e=>{ sy=e.touches[0].clientY; },{passive:true});
+sheet.addEventListener("touchmove",e=>{ const dy=e.touches[0].clientY-sy; if(dy>0){ sheet.style.transform="translateY("+dy+"px)"; } },{passive:true});
+sheet.addEventListener("touchend",e=>{ sheet.style.transform=""; if((e.changedTouches[0].clientY-sy)>90) closeSheet(); });
+
+buildQueue(false);
 </script>
 </body>
 </html>
