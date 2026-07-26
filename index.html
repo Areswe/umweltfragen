@@ -42,17 +42,15 @@
     background:var(--amber-soft); border:1px solid #e3cf9f; border-radius:9px; padding:8px 11px}
   .storewarn.show{display:block}
 
-  /* ---------- CARD (kein 3D, robust) ---------- */
+  /* ---------- CARD (Überblenden, keine Transform-Fallen) ---------- */
   .stage{flex:1 1 auto; position:relative; padding:16px; display:flex; align-items:stretch; min-height:0}
   .swipe{position:relative; width:100%; display:flex}
-  .card{position:relative; width:100%;
-    transition:transform .15s ease, box-shadow .15s ease;
-    transform-origin:center; will-change:transform}
-  .card.flipping{transform:scaleX(.02)}
+  .card{position:relative; width:100%}
   .face{position:absolute; inset:0; background:var(--card); border:1px solid var(--line);
     border-radius:22px; box-shadow:var(--shadow); display:flex; flex-direction:column; overflow:hidden;
-    opacity:0; visibility:hidden; pointer-events:none}
-  .face.active{opacity:1; visibility:visible; pointer-events:auto}
+    opacity:0; visibility:hidden; pointer-events:none;
+    transform:scale(.992); transition:opacity .14s ease, transform .14s ease}
+  .face.active{opacity:1; visibility:visible; pointer-events:auto; transform:none}
   .face.back{border-color:var(--blue-line)}
   .face-top{flex:0 0 auto; padding:16px 18px 0; display:flex; align-items:center; gap:8px}
   .tag{font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
@@ -70,6 +68,7 @@
   .a-line{color:var(--blue); font-size:clamp(15px,4vw,17px); line-height:1.5; margin:0 0 6px}
   .a-line.head{font-weight:700; margin-top:10px} .a-line.head:first-child{margin-top:0}
   .face.note .a-line{color:#8a5a12}
+  .tapflip{position:absolute; bottom:12px; left:0; right:0; text-align:center; font-size:11.5px; color:var(--ink-soft); opacity:.8}
 
   .badge{position:absolute; top:22px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
     padding:7px 12px; border-radius:10px; opacity:0; transition:opacity .1s; border:2px solid; z-index:3}
@@ -139,7 +138,7 @@
     .stage,.bar,.controls{max-width:600px; margin-left:auto; margin-right:auto; width:100%}
     .sheet{max-width:600px; margin:0 auto; border-radius:20px 20px 0 0}
   }
-  @media (prefers-reduced-motion:reduce){.card{transition:none}}
+  @media (prefers-reduced-motion:reduce){.face{transition:none}}
 </style>
 </head>
 <body>
@@ -167,11 +166,13 @@
       <div class="card" id="card">
         <div class="face front active" id="faceFront">
           <div class="face-top"><span class="tag" id="frontTag">Thema</span><span class="status" id="frontStatus"></span></div>
-          <div class="face-body"><div class="q" id="frontQ"></div><div class="hint">Tippen zum Umdrehen</div></div>
+          <div class="face-body"><div class="q" id="frontQ"></div></div>
+          <div class="tapflip">Tippen zum Umdrehen</div>
         </div>
         <div class="face back" id="faceBack">
           <div class="face-top"><span class="tag a" id="backTag">Antwort</span><span class="status" id="backStatus"></span></div>
           <div class="face-body" id="backBody"></div>
+          <div class="tapflip">Tippen für die Frage · bewerten unten ↓</div>
         </div>
       </div>
       <div class="toast" id="toast"></div>
@@ -186,10 +187,10 @@
         <div><b class="r" id="doneAgain">0</b><small>nochmal</small></div>
       </div>
       <div>
-        <button class="primary" id="weakBtn">Schwache Karten üben</button>
-        <button class="ghost" id="restartBtn">Ganzen Stapel neu</button>
+        <button class="primary" id="weakBtn" type="button">Schwache Karten üben</button>
+        <button class="ghost" id="restartBtn" type="button">Ganzen Stapel neu</button>
       </div>
-      <button class="ghost" id="chooseBtn" style="margin-top:6px">Anderes Thema wählen</button>
+      <button class="ghost" id="chooseBtn" type="button" style="margin-top:6px">Anderes Thema wählen</button>
     </div>
   </div>
 
@@ -247,12 +248,12 @@ const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&qu
 const shortTopic=s=>s.replace(/ \(.*\)/,'').replace('Verwertung von ','').replace('Behandlung von ','');
 
 let currentDeck="all", weakOnly=false;
-let queue=[], pos=0, sKnow=0, sAgain=0, showingBack=false, busy=false;
+let queue=[], pos=0, sKnow=0, sAgain=0, showingBack=false;
 
 const card=document.getElementById("card"), swipe=document.getElementById("swipe"), bodyEl=document.body;
 const faceFront=document.getElementById("faceFront"), faceBack=document.getElementById("faceBack");
 const frontQ=document.getElementById("frontQ"), frontTag=document.getElementById("frontTag"), frontStatus=document.getElementById("frontStatus");
-const backBody=document.getElementById("backBody"), backTag=document.getElementById("backTag"), backStatus=document.getElementById("backStatus"), backFace=faceBack;
+const backBody=document.getElementById("backBody"), backTag=document.getElementById("backTag"), backStatus=document.getElementById("backStatus");
 const done=document.getElementById("done"), toastEl=document.getElementById("toast");
 const bK=document.getElementById("badgeKnow"), bA=document.getElementById("badgeAgain");
 
@@ -282,28 +283,29 @@ function renderAnswer(a){
     return '<p class="a-line'+(head?' head':'')+'">'+esc(line)+'</p>'; }).join("");
 }
 
-function resetCardVisual(){
-  // ALLES sauber zurücksetzen -> keine hängenden Transforms / kein Spiegeln
-  busy=false; showingBack=false;
-  card.classList.remove("flipping");
-  card.style.transform="";
+// Zentrale, immer eindeutige Zustandsfunktion – keine Timer, kein busy
+function showFace(back){
+  showingBack=back;
+  faceFront.classList.toggle("active", !back);
+  faceBack.classList.toggle("active", back);
+  bodyEl.classList.toggle("flipped", back);
+  // Wisch-Transformationen immer säubern
   swipe.style.transition=""; swipe.style.transform="";
   bK.style.opacity=0; bA.style.opacity=0;
-  faceFront.classList.add("active"); faceBack.classList.remove("active");
-  bodyEl.classList.remove("flipped");
 }
+function flipToggle(){ if(pos>=queue.length) return; showFace(!showingBack); }
 
 function render(){
   if(pos>=queue.length){ showDone(); return; }
   done.classList.remove("show");
-  resetCardVisual();
   const c=queue[pos];
   frontTag.textContent=shortTopic(c.topic); frontTag.className="tag";
   frontQ.textContent=c.q;
   setStatus(frontStatus,c.id); setStatus(backStatus,c.id);
   backTag.textContent=c.note?"Skizze / Hinweis":"Antwort"; backTag.className="tag "+(c.note?"note":"a");
-  backFace.classList.toggle("note",c.note);
+  faceBack.classList.toggle("note",c.note);
   backBody.innerHTML=renderAnswer(c.a); backBody.scrollTop=0;
+  showFace(false);          // jede neue Karte startet auf der Frage
   updateStats();
 }
 
@@ -319,29 +321,16 @@ function updateStats(){
   document.getElementById("nRound").textContent=Math.max(0,queue.length-pos);
 }
 
-// Umdrehen: kurzes Zusammenklappen, dann Seite tauschen (kein 3D -> nie gespiegelt)
-function flipToBack(){
-  if(busy || showingBack || pos>=queue.length) return;
-  busy=true;
-  card.classList.add("flipping");
-  setTimeout(()=>{
-    faceFront.classList.remove("active"); faceBack.classList.add("active");
-    showingBack=true; bodyEl.classList.add("flipped");
-    card.classList.remove("flipping");
-    setTimeout(()=>{ busy=false; }, 160);
-  }, 150);
-}
-
 let toastT=null;
 function toast(msg,type){
   toastEl.textContent=msg; toastEl.className="toast show "+(type||"");
   clearTimeout(toastT); toastT=setTimeout(()=>toastEl.classList.remove("show"),1050);
 }
-
 function insertAt(i,c){ i=Math.min(queue.length, Math.max(pos+1,i)); queue.splice(i,0,c); }
 
 function mark(known){
-  if(pos>=queue.length || !showingBack || busy) return;
+  if(pos>=queue.length) return;
+  if(!showingBack){ showFace(true); return; }   // Sicherheitsnetz: erst Antwort zeigen
   const c=queue[pos]; const before=lvl(c.id); const wasNew=!has(c.id);
   let l;
   if(known){
@@ -358,7 +347,7 @@ function mark(known){
 }
 
 function showDone(){
-  resetCardVisual();
+  showFace(false);
   done.classList.add("show");
   document.getElementById("doneKnow").textContent=sKnow;
   document.getElementById("doneAgain").textContent=sAgain;
@@ -372,55 +361,53 @@ function showDone(){
   updateStats();
 }
 
-// Buttons
-document.getElementById("btnShow").onclick=flipToBack;
+// Buttons – reagieren IMMER
+document.getElementById("btnShow").onclick=()=>showFace(true);
 document.getElementById("btnKnow").onclick=()=>mark(true);
 document.getElementById("btnAgain").onclick=()=>mark(false);
 document.getElementById("weakBtn").onclick=()=>buildQueue(true);
 document.getElementById("restartBtn").onclick=()=>buildQueue(false);
 document.getElementById("chooseBtn").onclick=openSheet;
 
-// Tippen auf die Karte: nur Vorderseite -> umdrehen
-card.addEventListener("click",()=>{ if(!moved && !showingBack) flipToBack(); });
+// Tippen auf die Karte: dreht in BEIDE Richtungen (nie eine Sackgasse)
+let justSwiped=false;
+card.addEventListener("click",()=>{ if(justSwiped){ justSwiped=false; return; } flipToggle(); });
 
-// Swipe (nur auf Rückseite bewertet) – verschiebt die ganze Karte horizontal, keine 3D-Drehung
-let startX=0,startY=0,down=false,moved=false,dx=0;
-swipe.addEventListener("touchstart",e=>{ if(pos>=queue.length){return;} down=true; moved=false; dx=0; startX=e.touches[0].clientX; startY=e.touches[0].clientY; swipe.style.transition="none"; },{passive:true});
+// Swipe: verschiebt die Karte; nur auf der Rückseite bewertend
+let startX=0,startY=0,down=false,dx=0;
+swipe.addEventListener("touchstart",e=>{ down=true; justSwiped=false; dx=0; startX=e.touches[0].clientX; startY=e.touches[0].clientY; swipe.style.transition="none"; },{passive:true});
 swipe.addEventListener("touchmove",e=>{
   if(!down||!showingBack) return;
   dx=e.touches[0].clientX-startX; const dy=e.touches[0].clientY-startY;
   if(Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)){
-    moved=true;
+    justSwiped=true;
     swipe.style.transform="translateX("+dx+"px) rotate("+(dx/34)+"deg)";
     bK.style.opacity=dx>40?Math.min(1,(dx-40)/60):0;
     bA.style.opacity=dx<-40?Math.min(1,(-dx-40)/60):0;
   }
 },{passive:true});
 swipe.addEventListener("touchend",()=>{
-  if(!down){ return; }
-  down=false;
-  swipe.style.transition="transform .2s ease";
-  const commit = showingBack && Math.abs(dx)>70;
-  if(commit){
-    // Karte rauswischen, dann bewerten
-    swipe.style.transform="translateX("+(dx>0?600:-600)+"px)";
+  if(!down) return; down=false;
+  if(showingBack && Math.abs(dx)>70){
     const known=dx>0;
-    setTimeout(()=>{ mark(known); }, 130);
+    swipe.style.transition="transform .18s ease";
+    swipe.style.transform="translateX("+(known?600:-600)+"px)";
+    setTimeout(()=>mark(known),120);   // mark() -> render() -> showFace(false) säubert alles
   } else {
+    swipe.style.transition="transform .18s ease";
     swipe.style.transform=""; bK.style.opacity=0; bA.style.opacity=0;
   }
-  // moved-Flag kurz halten, damit der folgende Klick nicht als Tap zählt, dann sicher zurücksetzen
-  setTimeout(()=>{ moved=false; }, 60);
 });
 
 // Tastatur (Desktop)
 document.addEventListener("keydown",e=>{
   if(document.getElementById("sheet").classList.contains("show"))return;
-  if(!showingBack){ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); flipToBack(); } }
+  if(!showingBack){ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); showFace(true); } }
   else{
     if(e.key==="ArrowRight"){ e.preventDefault(); mark(true); }
     else if(e.key==="ArrowLeft"){ e.preventDefault(); mark(false); }
     else if(e.key===" "||e.key==="Enter"){ e.preventDefault(); mark(true); }
+    else if(e.key==="ArrowUp"||e.key==="ArrowDown"){ e.preventDefault(); showFace(false); }
   }
 });
 
